@@ -25,11 +25,9 @@ if __name__ == "__main__":
 	with open("numpy_entropy_model.txt", "r") as model:
 		for line in model:
 			line = line.rstrip("\n")
-			# TODO: process the line
 			data_point, probability = line.split()
 			model_probabilities[data_point] = probability
 
-	# TODO: Create a NumPy array contanining the data and model distribution
 	words = set(data_probabilities.keys()).union(model_probabilities.keys())
 	data_distribution = np.zeros(len(words))
 	model_distribution = np.zeros(len(words))
@@ -41,11 +39,20 @@ if __name__ == "__main__":
 			model_distribution[i] = model_probabilities[w]
 		i += 1
 
-	# TODO: Compute and print entropy H(data distribution)
-	# print("{:.2f}".format(entropy))
+	if np.all(data_distribution):   # only non-zero probabilities
+		entropy = - np.sum(data_distribution * np.log(data_distribution))
+	else:
+		entropy = np.inf
+	print(entropy)
+	print("{:.2f}".format(entropy))
 
-	# TODO: Compute and print cross-entropy H(data distribution, model distribution)
-	# TODO: and KL-divergence D_KL(data distribution, model_distribution)
+	if np.all(model_distribution):   # only non-zero probabilities
+		cross_entropy = - np.sum(data_distribution * np.log(model_distribution))
+	else:
+		cross_entropy = np.inf
+	print("{:.2f}".format(cross_entropy))
+	kl_div = cross_entropy - entropy  # TODO inf - inf = nan
+	print("{:.2f}".format(kl_div))
 
 if __name__ == '__main__':
 	print("\t data_probabilities")
@@ -63,3 +70,9 @@ if __name__ == '__main__':
 	print(data_distribution)
 	print("\t model_distribution")
 	print(model_distribution)
+	print("\t entropy")
+	print("{:.2f}".format(entropy))
+	print("\t cross_entropy")
+	print("{:.2f}".format(cross_entropy))
+	print("\t kl_div")
+	print("{:.2f}".format(kl_div))
