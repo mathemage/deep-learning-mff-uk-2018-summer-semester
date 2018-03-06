@@ -392,6 +392,10 @@ auto/*
 pyvenv.cfg
 pip-selfcheck.json
 <<<<<<< HEAD
+<<<<<<< HEAD
 /.idea/
 =======
 >>>>>>> Create .gitignore
+=======
+/.idea/
+>>>>>>> Add .idea to .gitignore
