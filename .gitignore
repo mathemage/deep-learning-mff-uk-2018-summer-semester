@@ -391,3 +391,4 @@ auto/*
 [Ss]cripts
 pyvenv.cfg
 pip-selfcheck.json
+/.idea/
