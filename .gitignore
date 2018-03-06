@@ -391,4 +391,7 @@ auto/*
 [Ss]cripts
 pyvenv.cfg
 pip-selfcheck.json
+<<<<<<< HEAD
 /.idea/
+=======
+>>>>>>> Create .gitignore
