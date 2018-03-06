@@ -2,6 +2,13 @@
 import numpy as np
 import tensorflow as tf
 
+# NOTES by @mathemage:
+# train = tf.train.GradientDescentOptimizer(0.01).minimize(loss)
+# batch_per_epoch
+# tf.train.exponential_decay()
+# add exponential results to TensorBoard to check
+
+
 class Network:
     WIDTH = 28
     HEIGHT = 28

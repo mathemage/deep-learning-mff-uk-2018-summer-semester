@@ -2,6 +2,9 @@
 import numpy as np
 import tensorflow as tf
 
+# pip3 install --user gym==0.9.5
+# small dataset <- do not overfit: small capacity, simple model, regularization
+
 class Network:
     OBSERVATIONS = 4
     ACTIONS = 2
@@ -34,6 +37,7 @@ class Network:
                 self.summaries = [tf.contrib.summary.scalar("train/loss", loss),
                                   tf.contrib.summary.scalar("train/accuracy", accuracy)]
 
+            # collections = list of nodes in comp graph - saver
             # Construct the saver
             tf.add_to_collection("end_points/observations", self.observations)
             tf.add_to_collection("end_points/actions", self.actions)
