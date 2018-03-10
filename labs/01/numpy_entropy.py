@@ -53,21 +53,17 @@ if __name__ == "__main__":
 			data_point, probability = line.split()
 			model_probabilities[data_point] = probability
 
-	words = set(data_probabilities.keys()).union(model_probabilities.keys())
+	words = data_probabilities.keys()
 	data_distribution = np.zeros(len(words))
 	model_distribution = np.zeros(len(words))
 	i = 0
 	for w in words:
-		if w in data_probabilities.keys():
-			data_distribution[i] = data_probabilities[w]
+		data_distribution[i] = data_probabilities[w]
 		if w in model_probabilities.keys():
 			model_distribution[i] = model_probabilities[w]
 		i += 1
 
-	if np.all(data_distribution):   # only non-zero probabilities
-		entropy = - np.sum(data_distribution * np.log(data_distribution))
-	else:
-		entropy = np.inf
+	entropy = - np.sum(data_distribution * np.log(data_distribution))
 	print("{:.2f}".format(entropy))
 
 	if np.all(model_distribution):   # only non-zero probabilities
@@ -75,6 +71,6 @@ if __name__ == "__main__":
 	else:
 		cross_entropy = np.inf
 	print("{:.2f}".format(cross_entropy))
-	kl_div = cross_entropy - entropy  # TODO inf - inf = nan
+	kl_div = cross_entropy - entropy  # TODO number - inf = -inf
 	print("{:.2f}".format(kl_div))
 	# print_debug()
