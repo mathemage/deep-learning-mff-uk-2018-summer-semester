@@ -1,6 +1,31 @@
 #!/usr/bin/env python3
 import numpy as np
 
+
+def print_debug():
+	print("\t data_probabilities")
+	for point, frequency in data_points.items():
+		print("{} {} {}".format(point, frequency, data_probabilities[point]))
+	print("\t model_probabilities")
+	for point, frequency in model_probabilities.items():
+		print("{} {}".format(point, frequency))
+
+	print("\t words")
+	for w in words:
+		print(w)
+
+	print("\t data_distribution")
+	print(data_distribution)
+	print("\t model_distribution")
+	print(model_distribution)
+	print("\t entropy")
+	print("{:.2f}".format(entropy))
+	print("\t cross_entropy")
+	print("{:.2f}".format(cross_entropy))
+	print("\t kl_div")
+	print("{:.2f}".format(kl_div))
+
+
 if __name__ == "__main__":
 	# Load data distribution, each data point on a line
 	data_points = {}
@@ -43,7 +68,6 @@ if __name__ == "__main__":
 		entropy = - np.sum(data_distribution * np.log(data_distribution))
 	else:
 		entropy = np.inf
-	print(entropy)
 	print("{:.2f}".format(entropy))
 
 	if np.all(model_distribution):   # only non-zero probabilities
@@ -53,26 +77,4 @@ if __name__ == "__main__":
 	print("{:.2f}".format(cross_entropy))
 	kl_div = cross_entropy - entropy  # TODO inf - inf = nan
 	print("{:.2f}".format(kl_div))
-
-if __name__ == '__main__':
-	print("\t data_probabilities")
-	for point, frequency in data_points.items():
-		print("{} {} {}".format(point, frequency, data_probabilities[point]))
-	print("\t model_probabilities")
-	for point, frequency in model_probabilities.items():
-		print("{} {}".format(point, frequency))
-
-	print("\t words")
-	for w in words:
-		print(w)
-
-	print("\t data_distribution")
-	print(data_distribution)
-	print("\t model_distribution")
-	print(model_distribution)
-	print("\t entropy")
-	print("{:.2f}".format(entropy))
-	print("\t cross_entropy")
-	print("{:.2f}".format(cross_entropy))
-	print("\t kl_div")
-	print("{:.2f}".format(kl_div))
+	# print_debug()
