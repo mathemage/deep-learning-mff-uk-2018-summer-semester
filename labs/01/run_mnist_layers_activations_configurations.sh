@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# results at https://gist.github.com/mathemage/d6e1d043bf2a5c9ab39bf43f2c885117
+
 INTERPRETER=/usr/bin/python3
 SCRIPT=/home/mathemage/deep-learning-mff-uk-2018-summer-semester/labs/01/mnist_layers_activations.py
 
