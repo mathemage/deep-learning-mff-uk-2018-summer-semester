@@ -2,6 +2,12 @@
 import numpy as np
 import tensorflow as tf
 
+# NOTES by @mathemage:
+# * tf.layers.dropout(inputs=, rate=, training=False or tf.bool placeholder)
+# * dropout = 0 != turned-out dropout <= always true node in Comp Graph
+# * 2 types of random seeds: graph-lvl and op-lvl (based on node-id + default <- changes seed) seed
+
+
 class Network:
     WIDTH = 28
     HEIGHT = 28

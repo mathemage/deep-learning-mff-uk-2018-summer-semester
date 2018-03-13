@@ -2,6 +2,8 @@
 import numpy as np
 import tensorflow as tf
 
+# .upper() -> to uppercase the text as the final output
+# train in ~20-30 min on laptop
 
 # Loads an uppercase dataset.
 # - The dataset either uses a specified alphabet, or constructs an alphabet of
@@ -138,6 +140,7 @@ if __name__ == "__main__":
 
 	# Parse arguments
 	parser = argparse.ArgumentParser()
+	# TODO: pick correct hyperparams
 	parser.add_argument("--alphabet_size", default=None, type=int, help="Alphabet size.")
 	parser.add_argument("--batch_size", default=None, type=int, help="Batch size.")
 	parser.add_argument("--epochs", default=None, type=int, help="Number of epochs.")
