@@ -55,6 +55,8 @@ if __name__ == "__main__":
 
 	words = data_probabilities.keys()
 	data_distribution = np.zeros(len(words))
+	# data_distribution = np.array(data_points.values())
+	# data_distribution /= np.sum(data_distribution)
 	model_distribution = np.zeros(len(words))
 	i = 0
 	for w in words:
