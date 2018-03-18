@@ -393,3 +393,5 @@ pyvenv.cfg
 pip-selfcheck.json
 /.idea/
 *.gz
+02/gym_cartpole/
+labs/02/gym_cartpole/
