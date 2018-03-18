@@ -22,6 +22,11 @@ class Network:
             self.labels = tf.placeholder(tf.int64, [None], name="labels")
 
             # TODO: Define the model, with the output layers for actions in `output_layer`
+            # TODO: number of hidden layers (as low as possible)
+            # TODO: size of hidden layers
+            # TODO: activation functions
+            # TODO: optimizer
+            # TODO: (optionally) batch size
 
             self.actions = tf.argmax(output_layer, axis=1, name="actions")
 
