@@ -24,7 +24,7 @@ class Network:
 
 						# TODO: Define the model, with the output layers for actions in `output_layer`
 						depth_of_hidden_layers = 2        # TODO: number of hidden layers (as low as possible)
-						width_of_hidden_layer = 2         # TODO: size of hidden layers
+						width_of_hidden_layer = 1         # TODO: size of hidden layers
 						activation_function = tf.nn.relu  # TODO: activation functions
 
 						input_layer = tf.layers.Input(tensor=self.observations)
