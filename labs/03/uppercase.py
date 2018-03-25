@@ -105,27 +105,44 @@ class Network:
 			self.labels = tf.placeholder(tf.int32, [None], name="labels")
 			self.is_training = tf.placeholder(tf.bool, [], name="is_training")
 
-			# computation
+			# Computation
 			activation_fn = {
 				"none": None,
 				"relu": tf.nn.relu,
 				"tanh": tf.nn.tanh,
 				"sigmoid": tf.nn.sigmoid
 			}[args.activation]
-			flattened_window = tf.layers.flatten(self.windows, name="flatten")     # TODO one-hot encoding
+			flattened_windows = tf.layers.flatten(self.windows, name="flatten")     # TODO one-hot encoding
 			hidden_layers = [None] * (args.layers + 1)
-			hidden_layers[0] = flattened_window
+			hidden_layers_dropout = [None] * (args.layers + 1)
+			hidden_layers_dropout[0] = hidden_layers[0] = flattened_windows
 			for layer in range(1, args.layers + 1):
-				hidden_layers[layer] = tf.layers.dense(hidden_layers[layer - 1], args.hidden_layer, activation=activation_fn,
-				                                       name="hidden_layer{}".format(layer))
-			last_hidden_layer = hidden_layers[-1]
+				hidden_layers[layer] = tf.layers.dense(hidden_layers_dropout[layer - 1], args.hidden_layer,
+				                                       activation=activation_fn, name="hidden_layer{}".format(layer))
+				hidden_layers_dropout[layer] = tf.layers.dropout(hidden_layers[layer], rate=args.dropout,
+				                                                 training=self.is_training,
+				                                                 name="hidden_layer_dropout{}".format(layer))
+			last_hidden_layer = hidden_layers_dropout[-1]
 			output_layer = tf.layers.dense(last_hidden_layer, self.LABELS, activation=None, name="output_layer")
 			self.predictions = tf.argmax(output_layer, axis=1)
 
 			# Training
 			loss = tf.losses.sparse_softmax_cross_entropy(self.labels, output_layer)
 			global_step = tf.train.create_global_step()
-			self.training = tf.train.AdamOptimizer().minimize(loss, global_step=global_step, name="training")
+			if args.learning_rate_final is not None:
+				decay_rate = (args.learning_rate_final / args.learning_rate)**(1.0 / (args.epochs - 1))
+				lr = tf.train.exponential_decay(learning_rate=args.learning_rate, decay_rate=decay_rate,
+				                                global_step=global_step, decay_steps=batches_per_epoch, staircase=True)
+			else:
+				lr = args.learning_rate
+			if args.momentum is not None:
+				optimizer = tf.train.MomentumOptimizer(learning_rate=lr, momentum=args.momentum)
+			else:
+				optimizer = {
+					"SGD": tf.train.GradientDescentOptimizer(learning_rate=lr),
+					"Adam": tf.train.AdamOptimizer(learning_rate=lr)
+				}[args.optimizer]
+			self.training = optimizer.minimize(loss, global_step=global_step, name="training")
 
 			# Summaries
 			correct_predictions = tf.equal(self.predictions, tf.cast(self.labels, tf.int64))  # tf.cast(label_one_hot, tf.int64))
@@ -178,17 +195,19 @@ if __name__ == "__main__":
 	# Parse arguments
 	parser = argparse.ArgumentParser()
 	# TODO: pick correct hyperparams
+	parser.add_argument("--activation", default="relu", type=str, help="Activation function.")
 	parser.add_argument("--alphabet_size", default=100, type=int, help="Alphabet size.")
-	parser.add_argument("--batch_size", default=64, type=int, help="Batch size.")
-	parser.add_argument("--epochs", default=30, type=int, help="Number of epochs.")
-	parser.add_argument("--threads", default=1, type=int, help="Maximum number of threads to use.")
-	parser.add_argument("--window", default=10, type=int, help="Size of the window to use.")
-	# parser.add_argument("--dropout", default=0.6, type=float, help="Dropout rate")
+	parser.add_argument("--batch_size", default=256, type=int, help="Batch size.")
+	parser.add_argument("--dropout", default=0.6, type=float, help="Dropout rate")
+	parser.add_argument("--epochs", default=10, type=int, help="Number of epochs.")
 	parser.add_argument("--hidden_layer", default=20, type=int, help="Size of the hidden layer.")
 	parser.add_argument("--layers", default=1, type=int, help="Number of layers.")
-	parser.add_argument("--learning_rate", default=0.001, type=float, help="Initial learning rate.") # for Adam
-	# parser.add_argument("--learning_rate", default=0.01, type=float, help="Initial learning rate.")
-	# parser.add_argument("--learning_rate_final", default=None, type=float, help="Final learning rate.")
+	parser.add_argument("--learning_rate", default=0.01, type=float, help="Initial learning rate.")
+	parser.add_argument("--learning_rate_final", default=0.001, type=float, help="Final learning rate.")
+	parser.add_argument("--momentum", default=None, type=float, help="Momentum.")
+	parser.add_argument("--optimizer", default="Adam", type=str, help="Optimizer to use.")
+	parser.add_argument("--threads", default=1, type=int, help="Maximum number of threads to use.")
+	parser.add_argument("--window", default=10, type=int, help="Size of the window to use.")
 	args = parser.parse_args()
 
 	# Create logdir name
@@ -203,12 +222,14 @@ if __name__ == "__main__":
 	train = Dataset("uppercase_data_train.txt", args.window, alphabet=args.alphabet_size)
 	dev = Dataset("uppercase_data_dev.txt", args.window, alphabet=train.alphabet)
 	test = Dataset("uppercase_data_test.txt", args.window, alphabet=train.alphabet)
+	batches_per_epoch = len(train.text) // args.batch_size
 
 	# Construct the network
 	network = Network(threads=args.threads)
 	network.construct(args)
 
 	# Train
+	train.all_data()
 	for i in range(args.epochs):
 		while not train.epoch_finished():
 			windows, labels = train.next_batch(args.batch_size)
