@@ -10,6 +10,20 @@
 #
 # c6ef657e-2082-11e8-9de3-00505601122b (Anastasia Lebedeva)
 # 08a323e8-21f3-11e8-9de3-00505601122b (Karel Ha)
+#
+# Note that:
+# - after running this script which
+#   - which trains a neural net
+#   - and evaluates it to infer caps on test data
+# there was a postprocessing. We have:
+# - opened the test data file in Vim
+# - Ctrl-V -> Shift-G (to visual-block select of each line's first character)
+# - Shift-U (to uppercase characters under selection).
+# This should work since every line should start with a capital letter (and at least the 1st character in the 1st line
+# was deemed by our neural net to be capitalized).
+#
+# It's a hack though.
+
 
 INTERPRETER=/usr/bin/python3
 SCRIPT=/home/mathemage/deep-learning-mff-uk-2018-summer-semester/labs/03/uppercase.py
@@ -30,10 +44,14 @@ SCRIPT=/home/mathemage/deep-learning-mff-uk-2018-summer-semester/labs/03/upperca
 
 ARGS=(
 #"relu 100 256 0.6 10 20 1 0.01 0.001 Adam"  # with and without 1-hot enc
-#"relu 100 1024 0.6 10 20 1 0.01 0.001 Adam"  # with 1-hot enc <- best
+#"relu 100 1024 0.6 10 20 1 0.01 0.001 Adam"  # with 1-hot enc
 #"relu 100 1024 0.6 10 10 2 0.01 0.001 Adam"  # with 1-hot enc
 #"relu 100 1024 0.6 10 20 2 0.01 0.001 Adam"  # with 1-hot enc
-"relu 100 2048 0.6 10 20 2 0.01 0.001 Adam"  # with 1-hot enc
+#"relu 100 2048 0.6 10 20 2 0.01 0.001 Adam"  # with 1-hot enc
+#"relu 100 2048 0.6 10 100 2 0.01 0.001 Adam"  # with 1-hot enc
+#"relu 100 2048 0.6 10 200 2 0.01 0.001 Adam"  # with 1-hot enc
+"relu 100 2048 0.6 30 200 2 0.01 0.001 Adam"  # with 1-hot enc <- best
+#"relu 100 2048 0.6 10 100 3 0.01 0.001 Adam"  # with 1-hot enc
 )
 
 for line in "${ARGS[@]}"; do
