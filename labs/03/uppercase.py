@@ -105,12 +105,22 @@ class Network:
 			self.labels = tf.placeholder(tf.int32, [None], name="labels")
 			self.is_training = tf.placeholder(tf.bool, [], name="is_training")
 
-			# flattened_input = tf.layers.flatten(self.windows, name="flatten")
-			hidden_layer1 = tf.layers.dense(self.windows, args.hidden_layer, activation=tf.nn.relu, name="hidden_layer1")
-			hidden_layer2 = tf.layers.dense(hidden_layer1, args.hidden_layer, activation=tf.nn.relu, name="hidden_layer2")
-			hidden_layer3 = tf.layers.dense(hidden_layer2, args.hidden_layer, activation=tf.nn.relu, name="hidden_layer3")
-			output_layer = tf.layers.dense(hidden_layer3, self.LABELS, activation=None, name="output_layer")
-			self.predictions = tf.argmax(output_layer, 1)
+			# computation
+			activation_fn = {
+				"none": None,
+				"relu": tf.nn.relu,
+				"tanh": tf.nn.tanh,
+				"sigmoid": tf.nn.sigmoid
+			}[args.activation]
+			flattened_window = tf.layers.flatten(self.windows, name="flatten")     # TODO one-hot encoding
+			hidden_layers = [None] * (args.layers + 1)
+			hidden_layers[0] = flattened_window
+			for layer in range(1, args.layers + 1):
+				hidden_layers[layer] = tf.layers.dense(hidden_layers[layer - 1], args.hidden_layer, activation=activation_fn,
+				                                       name="hidden_layer{}".format(layer))
+			last_hidden_layer = hidden_layers[-1]
+			output_layer = tf.layers.dense(last_hidden_layer, self.LABELS, activation=None, name="output_layer")
+			self.predictions = tf.argmax(output_layer, axis=1)
 
 			# Training
 			loss = tf.losses.sparse_softmax_cross_entropy(self.labels, output_layer)
@@ -167,14 +177,18 @@ if __name__ == "__main__":
 
 	# Parse arguments
 	parser = argparse.ArgumentParser()
+	# TODO: pick correct hyperparams
 	parser.add_argument("--alphabet_size", default=100, type=int, help="Alphabet size.")
 	parser.add_argument("--batch_size", default=64, type=int, help="Batch size.")
 	parser.add_argument("--epochs", default=30, type=int, help="Number of epochs.")
 	parser.add_argument("--threads", default=1, type=int, help="Maximum number of threads to use.")
 	parser.add_argument("--window", default=10, type=int, help="Size of the window to use.")
-	parser.add_argument("--dropout", default=0.6, type=float, help="Dropout rate")
-	parser.add_argument("--hidden_layer", default=20, type=int, help="Dropout rate")
-	parser.add_argument("--learning_rate", default=0.01, type=float, help="Dropout rate")
+	# parser.add_argument("--dropout", default=0.6, type=float, help="Dropout rate")
+	parser.add_argument("--hidden_layer", default=20, type=int, help="Size of the hidden layer.")
+	parser.add_argument("--layers", default=1, type=int, help="Number of layers.")
+	parser.add_argument("--learning_rate", default=0.001, type=float, help="Initial learning rate.") # for Adam
+	# parser.add_argument("--learning_rate", default=0.01, type=float, help="Initial learning rate.")
+	# parser.add_argument("--learning_rate_final", default=None, type=float, help="Final learning rate.")
 	args = parser.parse_args()
 
 	# Create logdir name
@@ -205,7 +219,7 @@ if __name__ == "__main__":
 
 	# store the model
 	network.save("model/model")
-	# Generate uppercased test set
+	# Generate upper-cased test set
 	test_txt, _ = test.all_data()
 	test_predictions = network.classify(test_txt)
 
