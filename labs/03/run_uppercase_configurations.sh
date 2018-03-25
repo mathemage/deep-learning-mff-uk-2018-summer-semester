@@ -1,4 +1,15 @@
 #!/usr/bin/env bash
+#
+# All team solutions **must** list **all** members of the team.
+# The members must be listed using their ReCodEx ids anywhere
+# in the first comment block in the source file, i.e., in the first
+# consecutive range of lines beginning with `#`.
+#
+# You can find out ReCodEx id on URL when watching ReCodEx profile.
+# The id has the following format: 01234567-89ab-cdef-0123-456789abcdef.
+#
+# c6ef657e-2082-11e8-9de3-00505601122b (Anastasia Lebedeva)
+# 08a323e8-21f3-11e8-9de3-00505601122b (Karel Ha)
 
 INTERPRETER=/usr/bin/python3
 SCRIPT=/home/mathemage/deep-learning-mff-uk-2018-summer-semester/labs/03/uppercase.py
@@ -19,8 +30,10 @@ SCRIPT=/home/mathemage/deep-learning-mff-uk-2018-summer-semester/labs/03/upperca
 
 ARGS=(
 #"relu 100 256 0.6 10 20 1 0.01 0.001 Adam"  # with and without 1-hot enc
-#"relu 100 1024 0.6 10 20 1 0.01 0.001 Adam"  # with 1-hot enc
-"relu 100 1024 0.6 10 10 2 0.01 0.001 Adam"  # with 1-hot enc
+#"relu 100 1024 0.6 10 20 1 0.01 0.001 Adam"  # with 1-hot enc <- best
+#"relu 100 1024 0.6 10 10 2 0.01 0.001 Adam"  # with 1-hot enc
+#"relu 100 1024 0.6 10 20 2 0.01 0.001 Adam"  # with 1-hot enc
+"relu 100 2048 0.6 10 20 2 0.01 0.001 Adam"  # with 1-hot enc
 )
 
 for line in "${ARGS[@]}"; do
