@@ -3,6 +3,9 @@ import numpy as np
 import tensorflow as tf
 
 
+# .upper() -> to uppercase the text as the final output
+# train in ~20-30 min on laptop
+
 # Loads an uppercase dataset.
 # - The dataset either uses a specified alphabet, or constructs an alphabet of
 #   specified size consisting of most frequent characters.
