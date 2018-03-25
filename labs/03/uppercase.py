@@ -118,8 +118,8 @@ class Network:
 			self.training = tf.train.AdamOptimizer().minimize(loss, global_step=global_step, name="training")
 
 			# Summaries
-			correct_pred = tf.equal(self.predictions, tf.cast(self.labels, tf.int64))  # tf.cast(label_one_hot, tf.int64))
-			self.accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32), name="accuracy")
+			correct_predictions = tf.equal(self.predictions, tf.cast(self.labels, tf.int64))  # tf.cast(label_one_hot, tf.int64))
+			self.accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32), name="accuracy")
 
 			# logs and saves
 			summary_writer = tf.contrib.summary.create_file_writer(args.logdir, flush_millis=10 * 1000)
@@ -141,8 +141,7 @@ class Network:
 				tf.contrib.summary.initialize(session=self.session, graph=self.session.graph)
 
 	def train(self, windows, labels):
-		self.session.run([self.training, self.summaries["train"]], {self.windows: windows,
-		                                                            self.labels: labels,
+		self.session.run([self.training, self.summaries["train"]], {self.windows: windows, self.labels: labels,
 		                                                            self.is_training: True})
 
 	def evaluate(self, dataset, windows, labels):
@@ -190,22 +189,19 @@ if __name__ == "__main__":
 	train = Dataset("uppercase_data_train.txt", args.window, alphabet=args.alphabet_size)
 	dev = Dataset("uppercase_data_dev.txt", args.window, alphabet=train.alphabet)
 	test = Dataset("uppercase_data_test.txt", args.window, alphabet=train.alphabet)
+
 	# Construct the network
 	network = Network(threads=args.threads)
 	network.construct(args)
 
 	# Train
 	for i in range(args.epochs):
-		print("Epoch %d:" % (i + 1))
 		while not train.epoch_finished():
 			windows, labels = train.next_batch(args.batch_size)
 			network.train(windows, labels)
-		dev_windows, dev_labels = dev.all_data()
 
-		# evaluate datasets
-		accurecy_train = network.evaluate("train", windows, labels)
-		accurecy_dev = network.evaluate("dev", dev_windows, dev_labels)
-		print("Accuracy train %s vs dev %s" % (str(accurecy_train), str(accurecy_dev)))
+		dev_windows, dev_labels = dev.all_data()
+		network.evaluate("dev", dev_windows, dev_labels)
 
 	# store the model
 	network.save("model/model")
