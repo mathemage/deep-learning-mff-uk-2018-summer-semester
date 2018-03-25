@@ -101,7 +101,7 @@ class Network:
 	def construct(self, args):
 		with self.session.graph.as_default():
 			# Inputs
-			self.windows = tf.placeholder(tf.float32, [None, 2 * args.window + 1], name="windows")
+			self.windows = tf.placeholder(tf.int32, [None, 2 * args.window + 1], name="windows")
 			self.labels = tf.placeholder(tf.int32, [None], name="labels")
 			self.is_training = tf.placeholder(tf.bool, [], name="is_training")
 
@@ -112,10 +112,11 @@ class Network:
 				"tanh": tf.nn.tanh,
 				"sigmoid": tf.nn.sigmoid
 			}[args.activation]
-			flattened_windows = tf.layers.flatten(self.windows, name="flatten")     # TODO one-hot encoding
+			one_hot_encoded_windows = tf.one_hot(indices=self.windows, depth=args.alphabet_size, name="one_hot_encoder")
+			flattened_encodings = tf.layers.flatten(one_hot_encoded_windows, name="flatten")
 			hidden_layers = [None] * (args.layers + 1)
 			hidden_layers_dropout = [None] * (args.layers + 1)
-			hidden_layers_dropout[0] = hidden_layers[0] = flattened_windows
+			hidden_layers_dropout[0] = hidden_layers[0] = flattened_encodings
 			for layer in range(1, args.layers + 1):
 				hidden_layers[layer] = tf.layers.dense(hidden_layers_dropout[layer - 1], args.hidden_layer,
 				                                       activation=activation_fn, name="hidden_layer{}".format(layer))
@@ -197,7 +198,7 @@ if __name__ == "__main__":
 	# TODO: pick correct hyperparams
 	parser.add_argument("--activation", default="relu", type=str, help="Activation function.")
 	parser.add_argument("--alphabet_size", default=100, type=int, help="Alphabet size.")
-	parser.add_argument("--batch_size", default=256, type=int, help="Batch size.")
+	parser.add_argument("--batch_size", default=1024, type=int, help="Batch size.")
 	parser.add_argument("--dropout", default=0.6, type=float, help="Dropout rate")
 	parser.add_argument("--epochs", default=10, type=int, help="Number of epochs.")
 	parser.add_argument("--hidden_layer", default=20, type=int, help="Size of the hidden layer.")
@@ -231,7 +232,10 @@ if __name__ == "__main__":
 	# Train
 	train.all_data()
 	for i in range(args.epochs):
+		j = 0
 		while not train.epoch_finished():
+			print("Epoch #{} \t Batch #{}".format(i, j))
+			j += 1
 			windows, labels = train.next_batch(args.batch_size)
 			network.train(windows, labels)
 
