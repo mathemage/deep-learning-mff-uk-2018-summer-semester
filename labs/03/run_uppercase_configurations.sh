@@ -50,8 +50,12 @@ ARGS=(
 #"relu 100 2048 0.6 10 20 2 0.01 0.001 Adam"  # with 1-hot enc
 #"relu 100 2048 0.6 10 100 2 0.01 0.001 Adam"  # with 1-hot enc
 #"relu 100 2048 0.6 10 200 2 0.01 0.001 Adam"  # with 1-hot enc
-"relu 100 2048 0.6 30 200 2 0.01 0.001 Adam"  # with 1-hot enc <- best
+#"relu 100 2048 0.6 30 200 2 0.01 0.001 Adam"  # with 1-hot enc <- best
 #"relu 100 2048 0.6 10 100 3 0.01 0.001 Adam"  # with 1-hot enc
+#"relu 100 2048 0.6 10 300 3 0.01 0.001 Adam"  # with 1-hot enc
+"relu 100 2048 0.6 30 300 3 0.01 0.001 Adam"  # with 1-hot enc
+"relu 100 2048 0.6 100 300 3 0.01 0.001 Adam"  # with 1-hot enc
+"relu 100 2048 0.6 1000 300 3 0.01 0.001 Adam"  # with 1-hot enc
 )
 
 for line in "${ARGS[@]}"; do
