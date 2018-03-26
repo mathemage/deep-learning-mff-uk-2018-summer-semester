@@ -260,7 +260,9 @@ if __name__ == "__main__":
 	test_txt, _ = test.all_data()
 	test_predictions = network.classify(test_txt)
 
-	with open("tst_result.txt", "w") as text_file:
+	test_file = "{}/tst_result.txt".format(args.logdir)
+	print("Evaluating test data to file {}...".format(test_file))
+	with open(test_file, "w") as text_file:
 		for i, char in enumerate(test.text):
 			letter_cased = char.upper() if test_predictions[i] else char.lower()
 			print(letter_cased, file=text_file, end="")
