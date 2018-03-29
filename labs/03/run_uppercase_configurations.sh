@@ -60,7 +60,7 @@ ARGS=(
 #"relu 100 2048 0.6 30 200 3 0.01 0.001 Adam"  # with 1-hot enc
 #"relu 100 2048 0.6 50 100 3 0.01 0.001 Adam"  # with 1-hot enc
 #"relu 100 2048 0.6 50 200 3 0.01 0.001 Adam"  # with 1-hot enc
-"relu 100 2048 0.6 30 300 3 0.01 0.001 Adam"  # with 1-hot enc
+#"relu 100 2048 0.6 30 300 3 0.01 0.001 Adam"  # with 1-hot enc
 "relu 100 2048 0.6 50 300 3 0.01 0.001 Adam"  # with 1-hot enc <- best and used
 )
 
