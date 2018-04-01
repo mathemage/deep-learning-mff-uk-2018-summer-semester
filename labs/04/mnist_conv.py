@@ -40,7 +40,7 @@ class Network:
 					#   specified number of filters, kernel size, stride and padding. Example: C-10-3-1-same
 					layers[layer_idx] = tf.layers.conv2d(inputs=layers[layer_idx - 1], filters=int(specs[1]),
 					                                     kernel_size=int(specs[2]), strides=int(specs[3]), padding=specs[4],
-					                                     name=layer_name)
+					                                     activation=tf.nn.relu, name=layer_name)
 				if specs[0] == 'M':
 					# - M-kernel_size-stride: Add max pooling with specified size and stride. Example: M-3-2
 					layers[layer_idx] = tf.layers.max_pooling2d(inputs=layers[layer_idx - 1], pool_size=int(specs[1]),
