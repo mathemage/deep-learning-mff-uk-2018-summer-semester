@@ -27,46 +27,43 @@ class Network:
 			self.is_training = tf.placeholder(tf.bool, [], name="is_training")
 
 			# Computation
+			latest_layer = self.images
 			# Add layers described in the args.cnn. Layers are separated by a comma and can be:
 			cnn_desc = args.cnn.split(',')
 			depth = len(cnn_desc)
-			layers = [None] * (1 + depth)
-			layers[0] = self.images
 			for l in range(depth):
-				layer_idx = l + 1
 				layer_name = "layer{}-{}".format(l, cnn_desc[l])
 				specs = cnn_desc[l].split('-')
 				if specs[0] == 'C':
 					# - C-filters-kernel_size-stride-padding: Add a convolutional layer with ReLU activation and
 					#   specified number of filters, kernel size, stride and padding. Example: C-10-3-1-same
-					layers[layer_idx] = tf.layers.conv2d(inputs=layers[layer_idx - 1], filters=int(specs[1]),
-					                                     kernel_size=int(specs[2]), strides=int(specs[3]), padding=specs[4],
-					                                     activation=tf.nn.relu, name=layer_name)
+					latest_layer = tf.layers.conv2d(inputs=latest_layer, filters=int(specs[1]), kernel_size=int(specs[2]),
+					                                strides=int(specs[3]), padding=specs[4], activation=tf.nn.relu,
+					                                name=layer_name)
 				if specs[0] == 'M':
 					# - M-kernel_size-stride: Add max pooling with specified size and stride. Example: M-3-2
-					layers[layer_idx] = tf.layers.max_pooling2d(inputs=layers[layer_idx - 1], pool_size=int(specs[1]),
-					                                            strides=int(specs[2]), name=layer_name)
+					latest_layer = tf.layers.max_pooling2d(inputs=latest_layer, pool_size=int(specs[1]), strides=int(specs[2]),
+					                                       name=layer_name)
 				if specs[0] == 'F':
 					# - F: Flatten inputs
-					layers[layer_idx] = tf.layers.flatten(inputs=layers[layer_idx - 1], name=layer_name)
+					latest_layer = tf.layers.flatten(inputs=latest_layer, name=layer_name)
 				if specs[0] == 'R':
 					# - R-hidden_layer_size: Add a dense layer with ReLU activation and specified size. Ex: R-100
-					layers[layer_idx] = tf.layers.dense(inputs=layers[layer_idx - 1], units=int(specs[1]), activation=tf.nn.relu,
-					                                    name=layer_name)
+					latest_layer = tf.layers.dense(inputs=latest_layer, units=int(specs[1]), activation=tf.nn.relu,
+					                               name=layer_name)
 				if specs[0] == 'CB':
 					# - CB-filters-kernel_size-stride-padding: Add a convolutional layer with BatchNorm
 					#   and ReLU activation and specified number of filters, kernel size, stride and padding.
 					#   Example: CB-10-3-1-same
 					# To correctly implement BatchNorm:
 					# - The convolutional layer should not use any activation and no biases.
-					conv_layer = tf.layers.conv2d(inputs=layers[layer_idx - 1], filters=int(specs[1]), kernel_size=int(specs[2]),
-					                              strides=int(specs[3]), padding=specs[4], activation=None, use_bias=False,
-					                              name=layer_name)
+					conv_layer = tf.layers.conv2d(inputs=latest_layer, filters=int(specs[1]), kernel_size=int(specs[2]),
+					                              strides=int(specs[3]), padding=specs[4], activation=None, use_bias=False)
 					# - The output of the convolutional layer is passed to batch_normalization layer, which
 					#   should specify `training=True` during training and `training=False` during inference.
 					batchnorm_layer = tf.layers.batch_normalization(inputs=conv_layer, training=self.is_training)
 					# - The output of the batch_normalization layer is passed through tf.nn.relu.
-					layers[layer_idx] = tf.nn.relu(batchnorm_layer)
+					latest_layer = tf.nn.relu(batchnorm_layer, name=layer_name)
 
 				# # Implement dropout on the hidden layer using tf.layers.dropout,
 				# # with using dropout date of args.dropout. The dropout must be active only
@@ -77,7 +74,7 @@ class Network:
 				# # output_layer = tf.layers.dense(hidden_layer_dropout, self.LABELS, activation=None, name="output_layer")
 
 			# Store result in `features`.
-			features = layers[-1]
+			features = latest_layer
 
 			output_layer = tf.layers.dense(features, self.LABELS, activation=None, name="output_layer")
 			self.predictions = tf.argmax(output_layer, axis=1)
