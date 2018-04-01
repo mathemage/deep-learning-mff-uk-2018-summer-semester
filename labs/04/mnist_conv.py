@@ -52,7 +52,6 @@ class Network:
 					# - R-hidden_layer_size: Add a dense layer with ReLU activation and specified size. Ex: R-100
 					layers[layer_idx] = tf.layers.dense(inputs=layers[layer_idx - 1], units=int(specs[1]), activation=tf.nn.relu,
 					                                    name=layer_name)
-				print("Layer {} added".format(layers[layer_idx].name))
 
 			# Store result in `features`.
 			features = layers[-1]
