@@ -6,6 +6,7 @@ import tensorflow as tf
 # switch off GPU: CUDA_VISIBLE_DEVICES = " " python3
 
 
+# noinspection SpellCheckingInspection
 class Network:
 	WIDTH = 28
 	HEIGHT = 28
@@ -133,6 +134,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--batch_size", default=50, type=int, help="Batch size.")
 	parser.add_argument("--dropout", default=0.6, type=float, help="Dropout rate.")
+	parser.add_argument("--cnn", default=None, type=str, help="Description of the CNN architecture.")
 	parser.add_argument("--epochs", default=10, type=int, help="Number of epochs.")
 	parser.add_argument("--threads", default=1, type=int, help="Maximum number of threads to use.")
 	args = parser.parse_args()
