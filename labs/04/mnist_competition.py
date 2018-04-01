@@ -67,6 +67,14 @@ class Network:
 					# - The output of the batch_normalization layer is passed through tf.nn.relu.
 					layers[layer_idx] = tf.nn.relu(batchnorm_layer)
 
+				# # Implement dropout on the hidden layer using tf.layers.dropout,
+				# # with using dropout date of args.dropout. The dropout must be active only
+				# # during training -- use `self.is_training` placeholder to control the
+				# # `training` argument of tf.layers.dropout. Store the result to `hidden_layer_dropout`.
+				# hidden_layer_dropout = tf.layers.dropout(hidden_layer, rate=args.dropout, training=self.is_training,
+				# 																				 name="hidden_layer_dropout")
+				# # output_layer = tf.layers.dense(hidden_layer_dropout, self.LABELS, activation=None, name="output_layer")
+
 			# Store result in `features`.
 			features = layers[-1]
 
@@ -82,6 +90,7 @@ class Network:
 			#   or (preferably) attached to `self.train` using `tf.control_dependencies`.
 			update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 			with tf.control_dependencies(update_ops):
+				# TODO decaying learning rate
 				self.training = tf.train.AdamOptimizer().minimize(loss, global_step=global_step, name="training")
 
 			# Summaries
@@ -123,7 +132,7 @@ if __name__ == "__main__":
 	# Parse arguments
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--batch_size", default=50, type=int, help="Batch size.")
-	parser.add_argument("--cnn", default=None, type=str, help="Description of the CNN architecture.")
+	parser.add_argument("--dropout", default=0.6, type=float, help="Dropout rate.")
 	parser.add_argument("--epochs", default=10, type=int, help="Number of epochs.")
 	parser.add_argument("--threads", default=1, type=int, help="Maximum number of threads to use.")
 	args = parser.parse_args()
@@ -156,6 +165,6 @@ if __name__ == "__main__":
 
 	# TODO: Compute test_labels, as numbers 0-9, corresponding to mnist.test.images
 
-	with open("mnist_competition_test.txt", "w") as test_file:
-		for label in test_labels:
-			print(label, file=test_file)
+	# with open("mnist_competition_test.txt", "w") as test_file:
+	# 	for label in test_labels:
+	# 		print(label, file=test_file)
