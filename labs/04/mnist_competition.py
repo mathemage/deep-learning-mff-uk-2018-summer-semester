@@ -34,12 +34,6 @@ class Network:
 			for l in range(depth):
 				layer_name = "layer{}-{}".format(l, cnn_desc[l])
 				specs = cnn_desc[l].split('-')
-				if specs[0] == 'C':
-					# - C-filters-kernel_size-stride-padding: Add a convolutional layer with ReLU activation and
-					#   specified number of filters, kernel size, stride and padding. Example: C-10-3-1-same
-					latest_layer = tf.layers.conv2d(inputs=latest_layer, filters=int(specs[1]), kernel_size=int(specs[2]),
-					                                strides=int(specs[3]), padding=specs[4], activation=tf.nn.relu,
-					                                name=layer_name)
 				if specs[0] == 'M':
 					# - M-kernel_size-stride: Add max pooling with specified size and stride. Example: M-3-2
 					latest_layer = tf.layers.max_pooling2d(inputs=latest_layer, pool_size=int(specs[1]), strides=int(specs[2]),
