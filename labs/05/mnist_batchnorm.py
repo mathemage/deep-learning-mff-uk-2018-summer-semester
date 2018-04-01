@@ -77,7 +77,13 @@ class Network:
 			# Training
 			loss = tf.losses.sparse_softmax_cross_entropy(self.labels, output_layer, scope="loss")
 			global_step = tf.train.create_global_step()
-			self.training = tf.train.AdamOptimizer().minimize(loss, global_step=global_step, name="training")
+			# - You need to update the moving averages of mean and variance in the batch normalization
+			#   layer during each training batch. Such update operations can be obtained using
+			#   `tf.get_collection(tf.GraphKeys.UPDATE_OPS)` and utilized either directly in `session.run`,
+			#   or (preferably) attached to `self.train` using `tf.control_dependencies`.
+			update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+			with tf.control_dependencies(update_ops):
+				self.training = tf.train.AdamOptimizer().minimize(loss, global_step=global_step, name="training")
 
 			# Summaries
 			self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.labels, self.predictions), tf.float32))
@@ -97,14 +103,8 @@ class Network:
 				tf.contrib.summary.initialize(session=self.session, graph=self.session.graph)
 
 	def train(self, images, labels):
-		# - You need to update the moving averages of mean and variance in the batch normalization
-		#   layer during each training batch. Such update operations can be obtained using
-		#   `tf.get_collection(tf.GraphKeys.UPDATE_OPS)` and utilized either directly in `session.run`,
-		#   or (preferably) attached to `self.train` using `tf.control_dependencies`.
-		update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
-		with tf.control_dependencies(update_ops):
-			self.session.run([self.training, self.summaries["train"]], {self.images: images, self.labels: labels,
-																																	self.is_training: True})
+		self.session.run([self.training, self.summaries["train"]], {self.images: images, self.labels: labels,
+																																self.is_training: True})
 
 	def evaluate(self, dataset, images, labels):
 		accuracy, _ = self.session.run([self.accuracy, self.summaries[dataset]], {self.images: images, self.labels: labels,
