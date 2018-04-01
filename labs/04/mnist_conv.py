@@ -2,7 +2,8 @@
 import numpy as np
 import tensorflow as tf
 
-" switch off GPU: CUDA_VISIBLE_DEVICES = " " python3
+# switch off GPU: CUDA_VISIBLE_DEVICES = " " python3
+
 
 class Network:
 	WIDTH = 28
