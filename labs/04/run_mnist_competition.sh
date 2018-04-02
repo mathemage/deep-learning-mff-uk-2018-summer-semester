@@ -30,9 +30,15 @@ ARGS=(
 #"--cnn=CB-10-3-2-same,F,R-100 --batch_size=256"
 #"--cnn=CB-10-3-2-same,F,R-100 --batch_size=1024"
 #"--cnn=CB-10-3-2-same,F,R-100 --batch_size=2048"
-"--cnn=CB-10-3-2-same,F,R-100 --batch_size=256  --epochs 30"                                          # <- best so far
-"--cnn=CB-10-3-2-same,F,R-100 --batch_size=1024 --epochs 30"
-"--cnn=CB-10-3-2-same,F,R-100 --batch_size=2048 --epochs 30"
+#"--cnn=CB-10-3-2-same,F,R-100 --batch_size=256  --epochs 30"
+#"--cnn=CB-10-3-2-same,F,R-100 --batch_size=1024 --epochs 30"
+#"--cnn=CB-10-3-2-same,F,R-100 --batch_size=2048 --epochs 30"
+#"--cnn=CB-20-3-2-same,M-3-2,F,R-300 --epochs 30 --batch_size 64"
+#"--cnn=CB-20-3-2-same,M-3-2,F,R-300 --epochs 30 --batch_size 256"
+#"--cnn=CB-20-3-2-same,F,R-300       --epochs 30 --batch_size 64"
+#"--cnn=CB-20-3-2-same,F,R-300       --epochs 30 --batch_size 256"                              # <- best so far
+"--cnn=CB-20-3-2-same,F,R-300       --epochs 120 --batch_size 256"
+# TODO "--cnn=CB-20-3-2-same,M-3-2,F,R-300 --epochs 100 --batch_size 64"
 )
 
 for configuration in "${ARGS[@]}"; do
