@@ -38,7 +38,7 @@ ARGS=(
 #"--cnn=CB-20-3-2-same,F,R-300       --epochs 30 --batch_size 64"
 #"--cnn=CB-20-3-2-same,F,R-300       --epochs 30 --batch_size 256"                              # <- best so far
 "--cnn=CB-20-3-2-same,F,R-300       --epochs 120 --batch_size 256"
-# TODO "--cnn=CB-20-3-2-same,M-3-2,F,R-300 --epochs 100 --batch_size 64"
+"--cnn=CB-20-3-2-same,M-3-2,F,R-300 --epochs 100 --batch_size 64"
 )
 
 for configuration in "${ARGS[@]}"; do
