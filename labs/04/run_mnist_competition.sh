@@ -36,13 +36,15 @@ ARGS=(
 #"--cnn=CB-20-3-2-same,M-3-2,F,R-300 --epochs 30 --batch_size 64"
 #"--cnn=CB-20-3-2-same,M-3-2,F,R-300 --epochs 30 --batch_size 256"
 #"--cnn=CB-20-3-2-same,F,R-300       --epochs 30 --batch_size 64"
-#"--cnn=CB-20-3-2-same,F,R-300       --epochs 30 --batch_size 256"                              # <- best so far
+#"--cnn=CB-20-3-2-same,F,R-300       --epochs 30 --batch_size 256"
 #"--cnn=CB-20-3-2-same,F,R-300       --epochs 120 --batch_size 256"
-"--cnn=CB-10-3-1-same,CB-10-3-1-same,F,R-300 --epochs 30 --batch_size  50"
-"--cnn=CB-10-3-1-same,CB-10-3-1-same,F,R-300 --epochs 30 --batch_size 256"
-"--cnn=CB-20-3-1-same,CB-20-3-1-same,F,R-300 --epochs 30 --batch_size  50"
-"--cnn=CB-20-3-1-same,CB-20-3-1-same,F,R-300 --epochs 30 --batch_size 256"
-# TODO "--cnn=CB-20-3-2-same,M-3-2,F,R-300 --epochs 100 --batch_size 64 --learning_rate 0.01 --learning_rate_final 0.005"
+#"--cnn=CB-10-3-1-same,CB-10-3-1-same,F,R-300 --epochs 30 --batch_size  50"
+#"--cnn=CB-10-3-1-same,CB-10-3-1-same,F,R-300 --epochs 30 --batch_size 256"
+#"--cnn=CB-20-3-1-same,CB-20-3-1-same,F,R-300 --epochs 30 --batch_size  50"
+#"--cnn=CB-20-3-1-same,CB-20-3-1-same,F,R-300 --epochs 30 --batch_size 256"                             # <- best so far
+#"--cnn=CB-20-3-2-same,M-3-2,F,R-300 --epochs 100 --batch_size 64 --learning_rate 0.01 --learning_rate_final 0.005"
+#"--cnn=CB-20-3-2-same,F,R-300                --epochs 120 --batch_size 256"
+"--cnn=CB-20-3-1-same,CB-20-3-1-same,F,R-300 --epochs 120 --batch_size 256"     # <- best at epoch #78.01 -> acc 99.94
 )
 
 for configuration in "${ARGS[@]}"; do
