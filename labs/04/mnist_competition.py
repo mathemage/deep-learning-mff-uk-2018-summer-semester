@@ -112,6 +112,9 @@ class Network:
 		                                                                          self.is_training: False})
 		return accuracy
 
+	def predict(self, images):
+		return self.session.run(self.predictions, {self.images: images, self.is_training: False})
+
 
 if __name__ == "__main__":
 	import argparse
@@ -171,7 +174,7 @@ if __name__ == "__main__":
 		network.evaluate("dev", mnist.validation.images, mnist.validation.labels)
 
 	# Compute test_labels, as numbers 0-9, corresponding to mnist.test.images
-	test_labels = network.predict("test", mnist.test.images)
+	test_labels = network.predict(mnist.test.images)
 	test_filename = "{}/mnist_competition_test.txt".format(args.logdir)
 	with open(test_filename, "w") as test_file:
 		for label in test_labels:
