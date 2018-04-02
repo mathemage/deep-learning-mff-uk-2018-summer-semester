@@ -159,8 +159,9 @@ if __name__ == "__main__":
 
 		network.evaluate("dev", mnist.validation.images, mnist.validation.labels)
 
-	# TODO: Compute test_labels, as numbers 0-9, corresponding to mnist.test.images
-
-	# with open("mnist_competition_test.txt", "w") as test_file:
-	# 	for label in test_labels:
-	# 		print(label, file=test_file)
+	# Compute test_labels, as numbers 0-9, corresponding to mnist.test.images
+	test_labels = network.predict("test", mnist.test.images)
+	test_filename = "{}/mnist_competition_test.txt".format(args.logdir)
+	with open(test_filename, "w") as test_file:
+		for label in test_labels:
+			print(label, file=test_file)
