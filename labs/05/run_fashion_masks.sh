@@ -29,6 +29,14 @@ ARGS=(
 #"--cnn=CB-20-3-1-same,CB-20-3-1-same,F,R-100 --epochs 240"
 #"--cnn=CB-64-5-1-valid,M-3-2,CB-64-5-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"
 #"--cnn=CB-64-3-1-valid,M-3-2,CB-64-3-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"         # <- best hyper-parameters found
+"--cnn=CB-64-5-1-valid,M-3-2,CB-64-5-1-valid,F,R-400,D-0.6 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"
+"--cnn=CB-64-3-1-valid,M-3-2,CB-64-3-1-valid,F,R-400,D-0.6 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"
+"--cnn=CB-64-5-1-valid,M-3-2,CB-64-5-1-valid,F,R-200,D-0.6,R-200,D-0.6 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"
+"--cnn=CB-64-3-1-valid,M-3-2,CB-64-3-1-valid,F,R-200,D-0.6,R-200,D-0.6 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"
+"--cnn=CB-64-5-1-valid,M-3-2,CB-64-5-1-valid,F,R-150,D-0.6,R-150,D-0.6,R-150,D-0.6 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"
+"--cnn=CB-64-3-1-valid,M-3-2,CB-64-3-1-valid,F,R-150,D-0.6,R-150,D-0.6,R-150,D-0.6 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"
+
+"--cnn=CB-5-3-1-valid,CB-10-3-1-valid,M-3-2,CB-20-3-1-valid,CB-30-3-1-valid,F,R-400,D-0.6 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"
 
 # setups from `run_mnist_competition.py`
 #"--cnn=CB-20-3-1-same,CB-20-3-1-same,F,R-300 --epochs  78 --batch_size 256"
