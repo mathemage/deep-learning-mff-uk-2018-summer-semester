@@ -7,3 +7,4 @@ logs/
 /05/fashion-masks-test.npz
 /05/fashion-masks-train.npz
 /05/fashion-masks-dev.npz
+/05/fashion_masks_recodex_submission.py
