@@ -150,31 +150,57 @@ class Network:
 			self.labels_predictions = tf.argmax(output_layer_labels, axis=1)
 			self.masks_predictions = tf.to_float(tf.argmax(output_layer_mask_resh, axis=4))
 
-			loss_pred = tf.losses.sparse_softmax_cross_entropy(labels=self.labels, logits=output_layer_labels, scope="loss")
-			loss_mask = tf.losses.sparse_softmax_cross_entropy(labels=tf.cast(self.masks, tf.int64),
-			                                                   logits=output_layer_mask_resh, scope="loss")
+			self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.labels, self.labels_predictions), tf.float32))
+			only_correct_masks = tf.where(tf.equal(self.labels, self.labels_predictions),
+			                              self.masks_predictions, tf.zeros_like(self.masks_predictions))
+			intersection = tf.reduce_sum(only_correct_masks * self.masks, axis=[1, 2, 3])
+			self.iou = tf.reduce_mean(
+					intersection / (tf.reduce_sum(only_correct_masks, axis=[1, 2, 3])
+					                + tf.reduce_sum(self.masks, axis=[1, 2, 3]) - intersection)
+			)
+
+			# - loss is stored in `loss`
+			# loss = loss_mask + loss_pred
+			# loss = loss_mask * loss_pred
+			# loss_pred = tf.losses.sparse_softmax_cross_entropy(labels=self.labels, logits=output_layer_labels, scope="loss")
+			# loss_mask = tf.losses.sparse_softmax_cross_entropy(labels=tf.cast(self.masks, tf.int64),
+			#                                                    logits=output_layer_mask_resh, scope="loss")
+			# loss_mask = tf.losses.mean_squared_error(labels=tf.cast(self.masks, tf.int64), predictions=output_layer_mask_resh,
+			#                                          scope="loss")
+			# label_agreement = loss_pred
+			# correct_masks = label_agreement * self.masks_predictions
+			# intersection_for_loss = tf.reduce_sum(correct_masks * self.masks, axis=[1, 2, 3])
+			# loss = tf.reduce_mean(
+			# 		intersection_for_loss / (tf.reduce_sum(correct_masks, axis=[1, 2, 3])
+			# 		                + tf.reduce_sum(self.masks, axis=[1, 2, 3]) - intersection_for_loss)
+			# )
+			# correct_label_similarities = tf.one_hot(self.labels, depth=self.LABELS) - tf.nn.softmax(logits=output_layer_labels)
+			# correct_masks = (1 - tf.reduce_sum(correct_label_similarities * correct_label_similarities)) * self.masks_predictions
+			# intersection_for_loss = tf.reduce_sum(correct_masks * self.masks, axis=[1, 2, 3])
+			# loss = tf.reduce_mean(
+			# 		intersection_for_loss / (tf.reduce_sum(correct_masks, axis=[1, 2, 3])
+			# 		                         + tf.reduce_sum(self.masks, axis=[1, 2, 3]) - intersection_for_loss)
+			# )
+
+			# loss_class = tf.losses.sparse_softmax_cross_entropy(labels=self.labels, logits=output_layer_labels, scope="loss")
+			class_cosine_distance = tf.reduce_sum(tf.one_hot(self.labels, depth=self.LABELS) * tf.nn.softmax(output_layer_labels))
+			loss_intersection = tf.reduce_sum(self.masks_predictions * self.masks, axis=[1, 2, 3])
+			loss_iou = tf.reduce_mean(
+					loss_intersection / (tf.reduce_sum(self.masks_predictions, axis=[1, 2, 3])
+					                + tf.reduce_sum(self.masks, axis=[1, 2, 3]) - loss_intersection)
+			)
+			# loss = loss_class * loss_iou
+			loss = class_cosine_distance * loss_iou
 
 			global_step = tf.train.create_global_step()
 			learning_rate = tf.train.exponential_decay(args.learning_rate, global_step,
 			                                           batches_per_epoch, decay_rate, staircase=True)
-			# - loss is stored in `loss`
-			loss = loss_mask + loss_pred
-
 			extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
 			with tf.control_dependencies(extra_update_ops):
 				# - training is stored in `self.training`
 				self.training = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step, name="training")
 
 			# Summaries
-			self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.labels, self.labels_predictions), tf.float32))
-			only_correct_masks = tf.where(tf.equal(self.labels, self.labels_predictions),
-			                              self.masks_predictions, tf.zeros_like(self.masks_predictions))
-			intersection = tf.reduce_sum(only_correct_masks * self.masks, axis=[1, 2, 3])
-			self.iou = tf.reduce_mean(
-					intersection / (tf.reduce_sum(only_correct_masks, axis=[1, 2, 3]) + tf.reduce_sum(self.masks, axis=[1, 2,
-					                                                                                                    3]) - intersection)
-			)
-
 			summary_writer = tf.contrib.summary.create_file_writer(args.logdir, flush_millis=10 * 1000)
 			self.summaries = {}
 			with summary_writer.as_default(), tf.contrib.summary.record_summaries_every_n_global_steps(100):
