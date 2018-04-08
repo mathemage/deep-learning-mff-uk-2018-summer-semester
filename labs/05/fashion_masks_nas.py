@@ -218,8 +218,6 @@ if __name__ == "__main__":
             images, labels, masks = train.next_batch(args.batch_size)
             network.train(images, labels, masks)
 
-        acc = network.evaluate("dev", images, labels, masks)
-        print("Test: {:.2f}".format(100 * acc))
         acc = network.evaluate("dev", dev.images, dev.labels, dev.masks)
         print("Dev: {:.2f}".format(100 * acc))
 
