@@ -19,11 +19,18 @@ SCRIPT=/home/mathemage/deep-learning-mff-uk-2018-summer-semester/labs/05/fashion
 #"--epochs", default=120, type=int, help="Number of epochs.")
 #"--cnn", default="CB-10-3-2-same,M-3-2,F,R-100", type=str, help="Description of the CNN architecture.")
 ARGS=(
-"--cnn=CB-10-3-2-same,F,R-100 --epochs 10"
-"--cnn=CB-10-3-1-same,F,R-100 --epochs 10"
-"--cnn=CB-20-3-2-same,F,R-100 --epochs 10"
-"--cnn=CB-20-3-1-same,F,R-100 --epochs 10"
+#"--cnn=CB-10-3-2-same,F,R-100 --epochs 30"
+#"--cnn=CB-10-3-1-same,F,R-100 --epochs 30"
+#"--cnn=CB-20-3-2-same,F,R-100 --epochs 30"
+#"--cnn=CB-20-3-1-same,F,R-100 --epochs 30"
+#"--cnn=CB-10-3-2-same,CB-10-3-2-same,F,R-100 --epochs 240"
+#"--cnn=CB-10-3-1-same,CB-10-3-1-same,F,R-100 --epochs 240"
+#"--cnn=CB-20-3-2-same,CB-20-3-2-same,F,R-100 --epochs 240"
+#"--cnn=CB-20-3-1-same,CB-20-3-1-same,F,R-100 --epochs 240"
+#"--cnn=CB-64-5-1-valid,M-3-2,CB-64-5-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"
+#"--cnn=CB-64-3-1-valid,M-3-2,CB-64-3-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"         # <- best hyper-parameters found
 
+# setups from `run_mnist_competition.py`
 #"--cnn=CB-20-3-1-same,CB-20-3-1-same,F,R-300 --epochs  78 --batch_size 256"
 #"--cnn=CB-20-3-1-same,CB-20-3-1-same,F,R-300 --epochs  78 --batch_size 256"
 #"--cnn=CB-20-3-1-same,M-2-1,CB-20-3-1-same,F,R-300 --epochs  78 --batch_size 256"
