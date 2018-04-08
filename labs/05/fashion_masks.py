@@ -47,6 +47,8 @@ class Dataset:
             return True
         return False
 
+
+
 class Network:
     WIDTH = 28
     HEIGHT = 28
@@ -70,6 +72,7 @@ class Network:
                                     strides=int(stride),
                                     padding=padding,
                                     activation=tf.nn.relu)]
+
         elif layer_spec_parsed[0] == "CB":
             # construct a conv layer with batch normalization
             [_, nfilters, filter_size, stride, padding] = layer_spec_parsed
@@ -90,6 +93,13 @@ class Network:
             return [tf.layers.max_pooling2d(layer_input,
                                            pool_size=int(filter_size),
                                            strides= int(stride))]
+        elif layer_spec_parsed[0] == "D":
+            # construct a flatten layer
+            [_, leave_rate] = layer_spec_parsed
+            return [tf.layers.dropout(layer_input,
+                                      rate = float(leave_rate),
+                                      training= self.is_training)]
+
         elif layer_spec_parsed[0] == "F":
             # construct a flatten layer
             return [tf.layers.flatten(layer_input)]
@@ -135,16 +145,14 @@ class Network:
             extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
             with tf.control_dependencies(extra_update_ops):
                 # - training is stored in `self.training`
-                self.training = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step,
-                                                                               name="training")
-
+                self.training = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step, name="training")
 
             # Summaries
             self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.labels, self.labels_predictions), tf.float32))
             only_correct_masks = tf.where(tf.equal(self.labels, self.labels_predictions),
                                           self.masks_predictions, tf.zeros_like(self.masks_predictions))
             intersection = tf.reduce_sum(only_correct_masks * self.masks, axis=[1,2,3])
-            iou = tf.reduce_mean(
+            self.iou = tf.reduce_mean(
                 intersection / (tf.reduce_sum(only_correct_masks, axis=[1,2,3]) + tf.reduce_sum(self.masks, axis=[1,2,3]) - intersection)
             )
 
@@ -153,14 +161,14 @@ class Network:
             with summary_writer.as_default(), tf.contrib.summary.record_summaries_every_n_global_steps(100):
                 self.summaries["train"] = [tf.contrib.summary.scalar("train/loss", loss),
                                            tf.contrib.summary.scalar("train/accuracy", self.accuracy),
-                                           tf.contrib.summary.scalar("train/iou", iou),
+                                           tf.contrib.summary.scalar("train/iou", self.iou),
                                            tf.contrib.summary.image("train/images", self.images),
                                            tf.contrib.summary.image("train/masks", self.masks_predictions)]
             with summary_writer.as_default(), tf.contrib.summary.always_record_summaries():
                 for dataset in ["dev", "test"]:
                     self.summaries[dataset] = [tf.contrib.summary.scalar(dataset+"/loss", loss),
                                                tf.contrib.summary.scalar(dataset+"/accuracy", self.accuracy),
-                                               tf.contrib.summary.scalar(dataset+"/iou", iou),
+                                               tf.contrib.summary.scalar(dataset+"/iou", self.iou),
                                                tf.contrib.summary.image(dataset+"/images", self.images),
                                                tf.contrib.summary.image(dataset+"/masks", self.masks_predictions)]
 
@@ -175,9 +183,9 @@ class Network:
 
 
     def evaluate(self, dataset, images, labels, masks):
-        [_, acc] = self.session.run([self.summaries[dataset], self.accuracy],
+        [_, iou] = self.session.run([self.summaries[dataset], self.iou],
                          {self.images: images, self.labels: labels, self.masks: masks, self.is_training: False})
-        return acc
+        return iou
 
     def predict(self, images):
         return self.session.run([self.labels_predictions, self.masks_predictions],
@@ -197,8 +205,8 @@ if __name__ == "__main__":
 
     # Parse arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("--batch_size", default=2048, type=int, help="Batch size.")
-    parser.add_argument("--epochs", default=120, type=int, help="Number of epochs.")
+    parser.add_argument("--batch_size", default=256, type=int, help="Batch size.")
+    parser.add_argument("--epochs", default=10, type=int, help="Number of epochs.")
     parser.add_argument("--threads", default=1, type=int, help="Maximum number of threads to use.")
     parser.add_argument("--cnn", default="CB-10-3-2-same,M-3-2,F,R-100", type=str, help="Description of the CNN architecture.")
     parser.add_argument("--learning_rate", default=0.01, type=float, help="Initial learning rate.")
@@ -232,8 +240,8 @@ if __name__ == "__main__":
             images, labels, masks = train.next_batch(args.batch_size)
             network.train(images, labels, masks)
 
-        acc = network.evaluate("dev", dev.images, dev.labels, dev.masks)
-        print("Dev: {:.2f}".format(100 * acc))
+        iou = network.evaluate("dev", dev.images, dev.labels, dev.masks)
+        print("Dev: {:.2f}".format(100 * iou))
 
     # Predict test data
     with open("{}/fashion_masks_test.txt".format(args.logdir), "w") as test_file:
