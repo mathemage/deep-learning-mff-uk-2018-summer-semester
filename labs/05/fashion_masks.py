@@ -88,17 +88,17 @@ class Network:
             return [conv_layer, conv_layer_bn, conv_layer_bn_relu]
 
         elif layer_spec_parsed[0] == "M":
-            # construct a max polling layer
+            # construct a max-pooling layer
             [_, filter_size, stride] = layer_spec_parsed
             return [tf.layers.max_pooling2d(layer_input,
                                            pool_size=int(filter_size),
                                            strides= int(stride))]
         elif layer_spec_parsed[0] == "D":
-            # construct a flatten layer
-            [_, leave_rate] = layer_spec_parsed
+            # construct a dropout layer
+            [_, dropout_rate] = layer_spec_parsed
             return [tf.layers.dropout(layer_input,
-                                      rate = float(leave_rate),
-                                      training= self.is_training)]
+                                      rate=float(dropout_rate),
+                                      training=self.is_training)]
 
         elif layer_spec_parsed[0] == "F":
             # construct a flatten layer
