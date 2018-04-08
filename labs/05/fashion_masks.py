@@ -255,7 +255,10 @@ if __name__ == "__main__":
 
 	# Train
 	for i in range(args.epochs):
+		j = 0
 		while not train.epoch_finished():
+			print("Epoch #{} \t Batch #{}".format(i, j))
+			j += 1
 			images, labels, masks = train.next_batch(args.batch_size)
 			network.train(images, labels, masks)
 
