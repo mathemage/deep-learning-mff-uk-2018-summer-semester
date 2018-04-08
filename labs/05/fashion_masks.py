@@ -173,6 +173,8 @@ class Network:
 
 
 if __name__ == "__main__":
+    print("tf.VERSION == {}".format(tf.VERSION))
+
     import argparse
     import datetime
     import os
