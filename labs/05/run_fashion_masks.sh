@@ -43,7 +43,21 @@ ARGS=(
 #"--cnn=CB-30-3-1-valid,M-3-2,CB-30-3-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = continuous IOU
 #"--cnn=CB-30-3-1-valid,M-3-2,CB-30-3-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = IOU with MSE for correct_masks
 #"--cnn=CB-30-3-1-valid,M-3-2,CB-30-3-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = loss_class * loss_iou
-"--cnn=CB-30-3-1-valid,M-3-2,CB-30-3-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = class_cosine_distance * loss_iou
+#"--cnn=CB-30-3-1-valid,M-3-2,CB-30-3-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = class_cosine_distance * loss_iou
+#"--cnn=CB-30-3-1-valid,M-3-2,CB-30-3-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = loss_pred - loss_pred * loss_mask
+#"--cnn=CB-30-3-1-valid,M-3-2,CB-30-3-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = loss_pred + (1 / loss_pred) * loss_mask
+#"--cnn=CB-30-3-1-valid,M-3-2,CB-30-3-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = loss_pred + (0.01 / loss_pred) * loss_mask
+#"--cnn=CB-30-3-1-valid,M-3-2,CB-30-3-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = loss_pred + (0.1 / loss_pred) * loss_mask
+#"--cnn=CB-30-3-1-valid,M-3-2,CB-30-3-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = loss_pred + (0.5 / loss_pred) * loss_mask
+#"--cnn=CB-30-3-1-valid,M-3-2,CB-30-3-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = loss_pred + (0.75 / loss_pred) * loss_mask
+#"--cnn=CB-30-3-1-valid,M-3-2,CB-30-3-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = loss_pred + (0.7 / loss_pred) * loss_mask
+#"--cnn=CB-30-3-1-valid,M-3-2,CB-30-3-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = loss_pred + (0.65 / loss_pred) * loss_mask
+"--cnn=CB-30-3-1-valid,M-3-2,CB-30-3-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = loss_pred + (0.7 / loss_pred) * loss_mask
+"--cnn=CB-30-3-1-valid,M-3-2,CB-30-3-1-valid,F,R-400,D-0.6 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = loss_pred + (0.7 / loss_pred) * loss_mask
+"--cnn=CB-30-3-1-valid,M-3-2,CB-30-3-1-valid,F,D-0.6,R-400,D-0.6 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = loss_pred + (0.7 / loss_pred) * loss_mask
+"--cnn=CB-60-3-1-valid,M-3-2,CB-60-3-1-valid,F,R-400 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = loss_pred + (0.7 / loss_pred) * loss_mask
+"--cnn=CB-60-3-1-valid,M-3-2,CB-60-3-1-valid,F,R-400,D-0.6 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = loss_pred + (0.7 / loss_pred) * loss_mask
+"--cnn=CB-60-3-1-valid,M-3-2,CB-60-3-1-valid,F,D-0.6,R-400,D-0.6 --batch_size 64 --epochs 60 --learning_rate 0.01 --learning_rate_final 0.0025"  # loss = loss_pred + (0.7 / loss_pred) * loss_mask
 
 # setups from `run_mnist_competition.py`
 #"--cnn=CB-20-3-1-same,CB-20-3-1-same,F,R-300 --epochs  78 --batch_size 256"

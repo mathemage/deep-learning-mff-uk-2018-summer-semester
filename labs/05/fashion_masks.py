@@ -162,9 +162,9 @@ class Network:
 			# - loss is stored in `loss`
 			# loss = loss_mask + loss_pred
 			# loss = loss_mask * loss_pred
-			# loss_pred = tf.losses.sparse_softmax_cross_entropy(labels=self.labels, logits=output_layer_labels, scope="loss")
-			# loss_mask = tf.losses.sparse_softmax_cross_entropy(labels=tf.cast(self.masks, tf.int64),
-			#                                                    logits=output_layer_mask_resh, scope="loss")
+			loss_pred = tf.losses.sparse_softmax_cross_entropy(labels=self.labels, logits=output_layer_labels, scope="loss")
+			loss_mask = tf.losses.sparse_softmax_cross_entropy(labels=tf.cast(self.masks, tf.int64),
+			                                                   logits=output_layer_mask_resh, scope="loss")
 			# loss_mask = tf.losses.mean_squared_error(labels=tf.cast(self.masks, tf.int64), predictions=output_layer_mask_resh,
 			#                                          scope="loss")
 			# label_agreement = loss_pred
@@ -183,14 +183,22 @@ class Network:
 			# )
 
 			# loss_class = tf.losses.sparse_softmax_cross_entropy(labels=self.labels, logits=output_layer_labels, scope="loss")
-			class_cosine_distance = tf.reduce_sum(tf.one_hot(self.labels, depth=self.LABELS) * tf.nn.softmax(output_layer_labels))
-			loss_intersection = tf.reduce_sum(self.masks_predictions * self.masks, axis=[1, 2, 3])
-			loss_iou = tf.reduce_mean(
-					loss_intersection / (tf.reduce_sum(self.masks_predictions, axis=[1, 2, 3])
-					                + tf.reduce_sum(self.masks, axis=[1, 2, 3]) - loss_intersection)
-			)
+			# class_cosine_distance = tf.reduce_sum(tf.one_hot(self.labels, depth=self.LABELS) * tf.nn.softmax(output_layer_labels))
+			# loss_intersection = tf.reduce_sum(self.masks_predictions * self.masks, axis=[1, 2, 3])
+			# loss_iou = tf.reduce_mean(
+			# 		loss_intersection / (tf.reduce_sum(self.masks_predictions, axis=[1, 2, 3])
+			# 		                + tf.reduce_sum(self.masks, axis=[1, 2, 3]) - loss_intersection)
+			# )
 			# loss = loss_class * loss_iou
-			loss = class_cosine_distance * loss_iou
+			# loss = class_cosine_distance * loss_iou
+			# loss = loss_pred - loss_pred * loss_mask
+			# loss = loss_pred + (1 / loss_pred) * loss_mask
+			# loss = loss_pred + (0.01 / loss_pred) * loss_mask
+			# loss = loss_pred + (0.5 / loss_pred) * loss_mask
+			# loss = loss_pred + (0.75 / loss_pred) * loss_mask
+			# loss = loss_pred + (0.7 / loss_pred) * loss_mask
+			# loss = loss_pred + (0.65 / loss_pred) * loss_mask
+			loss = loss_pred + (0.7 / loss_pred) * loss_mask
 
 			global_step = tf.train.create_global_step()
 			learning_rate = tf.train.exponential_decay(args.learning_rate, global_step,
