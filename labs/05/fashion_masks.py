@@ -47,7 +47,49 @@ class Network:
         self.session = tf.Session(graph = graph, config=tf.ConfigProto(inter_op_parallelism_threads=threads,
                                                                        intra_op_parallelism_threads=threads))
 
-    def construct(self, args):
+    def make_layer_from_specification(self, layer_input, layer_spec):
+        layer_spec_parsed = layer_spec.split("-")
+        if layer_spec_parsed[0] == "C":
+            # construct a conv layer
+            [_, nfilters, filter_size, stride, padding] = layer_spec_parsed
+            return [tf.layers.conv2d(layer_input,
+                                    filters=int(nfilters),
+                                    kernel_size=int(filter_size),
+                                    strides=int(stride),
+                                    padding=padding,
+                                    activation=tf.nn.relu)]
+        elif layer_spec_parsed[0] == "CB":
+            # construct a conv layer with batch normalization
+            [_, nfilters, filter_size, stride, padding] = layer_spec_parsed
+            conv_layer = tf.layers.conv2d(layer_input,
+                                    filters=int(nfilters),
+                                    kernel_size=int(filter_size),
+                                    strides=int(stride),
+                                    padding=padding,
+                                    activation=None,
+                                    use_bias=False)
+            conv_layer_bn = tf.layers.batch_normalization(conv_layer, training=self.is_training)
+            conv_layer_bn_relu = tf.nn.relu(conv_layer_bn)
+            return [conv_layer, conv_layer_bn, conv_layer_bn_relu]
+
+        elif layer_spec_parsed[0] == "M":
+            # construct a max polling layer
+            [_, filter_size, stride] = layer_spec_parsed
+            return [tf.layers.max_pooling2d(layer_input,
+                                           pool_size=int(filter_size),
+                                           strides= int(stride))]
+        elif layer_spec_parsed[0] == "F":
+            # construct a flatten layer
+            return [tf.layers.flatten(layer_input)]
+
+        elif layer_spec_parsed[0] == "R":
+            # construct a dense layer
+            [_, hidden_size] = layer_spec_parsed
+            return [tf.layers.dense(layer_input,
+                                   units=int(hidden_size),
+                                   activation=tf.nn.relu)]
+
+    def construct(self, args, batches_per_epoch, decay_rate):
         with self.session.graph.as_default():
             # Inputs
             self.images = tf.placeholder(tf.float32, [None, self.HEIGHT, self.WIDTH, 1], name="images")
@@ -55,17 +97,38 @@ class Network:
             self.masks = tf.placeholder(tf.float32, [None, self.HEIGHT, self.WIDTH, 1], name="masks")
             self.is_training = tf.placeholder(tf.bool, [], name="is_training")
 
-            # TODO: Computation and training.
-            #
-            # The code below assumes that:
-            # - loss is stored in `loss`
-            # - training is stored in `self.training`
+            # Computation and training
+            layers = [self.images]
+            if args.cnn is not None:
+                for layer_spec in args.cnn.split(","):
+                    layers += self.make_layer_from_specification(layers[-1], layer_spec)
+
+            output_layer_labels = tf.layers.dense(layers[-1], self.LABELS, activation=None, name="output_layer_prediction")
+            output_layer_mask = tf.layers.dense(layers[-1], self.HEIGHT * self.WIDTH * 2, activation=None, name="output_layer_mask")
+            output_layer_mask_resh = tf.reshape(output_layer_mask, shape=[-1 ,self.HEIGHT, self.WIDTH, 1, 2])
+
             # - label predictions are stored in `self.labels_predictions` of shape [None] and type tf.int64
-            # - mask predictions are stored in `self.masks_predictions` of shape [None, 28, 28, 1] and type tf.float32
-            #   with values 0 or 1
+            self.labels_predictions = tf.argmax(output_layer_labels, axis=1)
+            self.masks_predictions = tf.to_float(tf.argmax(output_layer_mask_resh, axis=4))
+
+            loss_pred = tf.losses.sparse_softmax_cross_entropy(labels=self.labels, logits=output_layer_labels, scope="loss")
+            loss_mask = tf.losses.sparse_softmax_cross_entropy(labels=tf.cast(self.masks, tf.int64), logits=output_layer_mask_resh, scope="loss")
+
+            global_step = tf.train.create_global_step()
+            learning_rate = tf.train.exponential_decay(args.learning_rate, global_step,
+                                                       batches_per_epoch, decay_rate, staircase=True)
+            # - loss is stored in `loss`
+            loss = loss_mask + loss_pred
+
+            extra_update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+            with tf.control_dependencies(extra_update_ops):
+                # - training is stored in `self.training`
+                self.training = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step,
+                                                                               name="training")
+
 
             # Summaries
-            accuracy = tf.reduce_mean(tf.cast(tf.equal(self.labels, self.labels_predictions), tf.float32))
+            self.accuracy = tf.reduce_mean(tf.cast(tf.equal(self.labels, self.labels_predictions), tf.float32))
             only_correct_masks = tf.where(tf.equal(self.labels, self.labels_predictions),
                                           self.masks_predictions, tf.zeros_like(self.masks_predictions))
             intersection = tf.reduce_sum(only_correct_masks * self.masks, axis=[1,2,3])
@@ -77,14 +140,14 @@ class Network:
             self.summaries = {}
             with summary_writer.as_default(), tf.contrib.summary.record_summaries_every_n_global_steps(100):
                 self.summaries["train"] = [tf.contrib.summary.scalar("train/loss", loss),
-                                           tf.contrib.summary.scalar("train/accuracy", accuracy),
+                                           tf.contrib.summary.scalar("train/accuracy", self.accuracy),
                                            tf.contrib.summary.scalar("train/iou", iou),
                                            tf.contrib.summary.image("train/images", self.images),
                                            tf.contrib.summary.image("train/masks", self.masks_predictions)]
             with summary_writer.as_default(), tf.contrib.summary.always_record_summaries():
                 for dataset in ["dev", "test"]:
                     self.summaries[dataset] = [tf.contrib.summary.scalar(dataset+"/loss", loss),
-                                               tf.contrib.summary.scalar(dataset+"/accuracy", accuracy),
+                                               tf.contrib.summary.scalar(dataset+"/accuracy", self.accuracy),
                                                tf.contrib.summary.scalar(dataset+"/iou", iou),
                                                tf.contrib.summary.image(dataset+"/images", self.images),
                                                tf.contrib.summary.image(dataset+"/masks", self.masks_predictions)]
@@ -98,9 +161,11 @@ class Network:
         self.session.run([self.training, self.summaries["train"]],
                          {self.images: images, self.labels: labels, self.masks: masks, self.is_training: True})
 
+
     def evaluate(self, dataset, images, labels, masks):
-        self.session.run(self.summaries[dataset],
+        [_, acc] = self.session.run([self.summaries[dataset], self.accuracy],
                          {self.images: images, self.labels: labels, self.masks: masks, self.is_training: False})
+        return acc
 
     def predict(self, images):
         return self.session.run([self.labels_predictions, self.masks_predictions],
@@ -118,9 +183,12 @@ if __name__ == "__main__":
 
     # Parse arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("--batch_size", default=None, type=int, help="Batch size.")
-    parser.add_argument("--epochs", default=None, type=int, help="Number of epochs.")
+    parser.add_argument("--batch_size", default=256, type=int, help="Batch size.")
+    parser.add_argument("--epochs", default=10, type=int, help="Number of epochs.")
     parser.add_argument("--threads", default=1, type=int, help="Maximum number of threads to use.")
+    parser.add_argument("--cnn", default=None, type=str, help="Description of the CNN architecture.")
+    parser.add_argument("--learning_rate", default=0.01, type=float, help="Initial learning rate.")
+    parser.add_argument("--learning_rate_final", default=0.005, type=float, help="Final learning rate.")
     args = parser.parse_args()
 
     # Create logdir name
@@ -138,8 +206,11 @@ if __name__ == "__main__":
     test = Dataset("fashion-masks-test.npz", shuffle_batches=False)
 
     # Construct the network
+    decay_rate = np.power(args.learning_rate_final / args.learning_rate, 1 / (args.epochs - 1))
+    batches_per_epoch = len(train._images) // args.batch_size
+
     network = Network(threads=args.threads)
-    network.construct(args)
+    network.construct(args,  batches_per_epoch, decay_rate)
 
     # Train
     for i in range(args.epochs):
@@ -147,7 +218,10 @@ if __name__ == "__main__":
             images, labels, masks = train.next_batch(args.batch_size)
             network.train(images, labels, masks)
 
-        network.evaluate("dev", dev.images, dev.labels, dev.masks)
+        acc = network.evaluate("dev", images, labels, masks)
+        print("Test: {:.2f}".format(100 * acc))
+        acc = network.evaluate("dev", dev.images, dev.labels, dev.masks)
+        print("Dev: {:.2f}".format(100 * acc))
 
     # Predict test data
     with open("{}/fashion_masks_test.txt".format(args.logdir), "w") as test_file:
