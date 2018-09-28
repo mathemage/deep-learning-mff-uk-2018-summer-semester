@@ -8,3 +8,4 @@ logs/
 /05/fashion-masks-train.npz
 /05/fashion-masks-dev.npz
 /05/fashion_masks_recodex_submission.py
+/11/timit-mfcc26.pickle
