@@ -112,8 +112,8 @@ if __name__ == "__main__":
 
 	# Predict test data
 	with open("{}/speech_recognition_test.txt".format(args.logdir), "w") as test_file:
-		pass
 		# TODO: Predict phonemes for test set using network.predict(timit.test, args.batch_size)
 		# and save them to `test_file`. Save the phonemes for each utterance on a single line,
 		# separating them by a single space. The phonemes should be printed as strings (use
 		# timit.phones to convert phoneme IDs to strings).
+		pass
