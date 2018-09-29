@@ -53,7 +53,7 @@ class Network:
 
             # TODO: Embed the target_seqs using the target embeddings.
 
-            # TODO: Generate a decoder GRU with wimension args.rnn_dim.
+            # TODO: Generate a decoder GRU with dimension args.rnn_dim.
 
             # TODO: Create a `decoder_layer` -- a fully connected layer with
             # target_chars neurons used in the decoder to classify into target characters.
