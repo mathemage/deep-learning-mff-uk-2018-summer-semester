@@ -20,12 +20,51 @@ class Network:
 			self.phone_lens = tf.placeholder(tf.int32, [None])
 			self.phones = tf.placeholder(tf.int32, [None, None])
 
-			# TODO: Computation and training. The rest of the template assumes
-			# the following variables:
-			# - `losses`: vector of losses, with an element for each example in the batch
-			losses = None
-			# - `edit_distances`: vector of edit distances, with an element for each batch example
-			edit_distances = None
+			# Done: Convert the input phoneme sequences into sparse representation (tf.where and tf.gather_nd are useful).
+			def get_sparse_tensor_from_dense(dense_tensor):
+				nonzero_indices = tf.where(tf.not_equal(dense_tensor, 0))
+				nonzero_values = tf.gather_nd(dense_tensor, nonzero_indices)
+				return tf.SparseTensor(
+					indices=nonzero_indices,
+					values=nonzero_values,
+					dense_shape=tf.shape(dense_tensor, out_type=tf.int64)
+				)
+
+			self.sparse_mfccs = get_sparse_tensor_from_dense(self.mfccs)
+			self.sparse_phones = get_sparse_tensor_from_dense(self.phones)
+
+			# TODO Use a bidirectional RNN and an output linear layer without activation.
+			# RNN Cell
+			if args.rnn_cell == "LSTM":
+				rnn_cell = tf.nn.rnn_cell.BasicLSTMCell
+			elif args.rnn_cell == "GRU":
+				rnn_cell = tf.nn.rnn_cell.GRUCell
+			else:
+				raise ValueError("Unknown rnn_cell {}".format(args.rnn_cell))
+
+			(hidden_layer_fwd, hidden_layer_bwd), _ = tf.nn.bidirectional_dynamic_rnn(
+				rnn_cell(args.rnn_cell_dim), rnn_cell(args.rnn_cell_dim),
+				inputs, sequence_length=self.sentence_lens, dtype=tf.float32)
+			hidden_layer = tf.concat([hidden_layer_fwd, hidden_layer_bwd], axis=2)
+			output_layer = tf.layers.dense(hidden_layer, num_phones)
+
+			# TODO Utilize CTC loss (tf.nn.ctc_loss).
+			# TODO: - `losses`: vector of losses, with an element for each example in the batch
+			losses = tf.nn.ctc_loss(
+				labels=,
+				inputs=output_layer,
+				sequence_length=self.phone_lens
+			)
+			# TODO Perform decoding by a CTC decoder (either greedily using tf.nn.ctc_greedy_decoder, or with beam search
+			#  employing tf.nn.ctc_beam_search_decoder).
+			tf.nn.ctc_beam_search_decoder()
+			# TODO Evaluate results using normalized edit distance (tf.edit_distance).
+			# TODO: - `edit_distances`: vector of edit distances, with an element for each batch example
+			edit_distances = tf.edit_distance(
+				hypothesis=,
+				truth=,
+				normalize=True
+			)
 
 			# Training
 			global_step = tf.train.create_global_step()
@@ -86,6 +125,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--batch_size", default=None, type=int, help="Batch size.")
 	parser.add_argument("--epochs", default=None, type=int, help="Number of epochs.")
+	parser.add_argument("--rnn_cell", default="GRU", type=str, help="RNN cell type.")
 	parser.add_argument("--threads", default=1, type=int, help="Maximum number of threads to use.")
 	args = parser.parse_args()
 
