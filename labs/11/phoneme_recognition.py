@@ -33,7 +33,6 @@ class Network:
 			self.sparse_mfccs = get_sparse_tensor_from_dense(self.mfccs)
 			self.sparse_phones = get_sparse_tensor_from_dense(self.phones)
 
-			# TODO Use a bidirectional RNN and an output linear layer without activation.
 			# RNN Cell
 			if args.rnn_cell == "LSTM":
 				rnn_cell = tf.nn.rnn_cell.BasicLSTMCell
@@ -42,6 +41,8 @@ class Network:
 			else:
 				raise ValueError("Unknown rnn_cell {}".format(args.rnn_cell))
 
+			# Done: Use a bidirectional RNN and an output linear layer without activation.
+			inputs = self.mfccs
 			(hidden_layer_fwd, hidden_layer_bwd), _ = tf.nn.bidirectional_dynamic_rnn(
 				rnn_cell(args.rnn_cell_dim), rnn_cell(args.rnn_cell_dim),
 				inputs, sequence_length=self.sentence_lens, dtype=tf.float32)
@@ -126,6 +127,7 @@ if __name__ == "__main__":
 	parser.add_argument("--batch_size", default=None, type=int, help="Batch size.")
 	parser.add_argument("--epochs", default=None, type=int, help="Number of epochs.")
 	parser.add_argument("--rnn_cell", default="GRU", type=str, help="RNN cell type.")
+	parser.add_argument("--rnn_cell_dim", default=64, type=int, help="RNN cell dimension.")
 	parser.add_argument("--threads", default=1, type=int, help="Maximum number of threads to use.")
 	args = parser.parse_args()
 
