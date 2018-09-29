@@ -10,7 +10,7 @@ logs/
 /05/fashion_masks_recodex_submission.py
 /11/timit-mfcc26.pickle
 /08/czech-cac.zip
-/08/czech-cac-test.txt
-/08/czech-cac-dev.txt
-/08/czech-cac-train.txt
-/08/czech-cac.LICENSE
+/*/czech-cac-test.txt
+/*/czech-cac-dev.txt
+/*/czech-cac-train.txt
+/*/czech-cac.LICENSE
