@@ -141,7 +141,7 @@ if __name__ == "__main__":
 	# Parse arguments
 	parser = argparse.ArgumentParser()
 	parser.add_argument("--batch_size", default=10, type=int, help="Batch size.")
-	parser.add_argument("--epochs", default=10, type=int, help="Number of epochs.")
+	parser.add_argument("--epochs", default=1, type=int, help="Number of epochs.")
 	parser.add_argument("--rnn_cell", default="GRU", type=str, help="RNN cell type.")
 	parser.add_argument("--rnn_cell_dim", default=5, type=int, help="RNN cell dimension.")
 	parser.add_argument("--threads", default=1, type=int, help="Maximum number of threads to use.")
@@ -176,7 +176,9 @@ if __name__ == "__main__":
 		# separating them by a single space. The phonemes should be printed as strings (use
 		# timit.phones to convert phoneme IDs to strings).
 		phone_id_seqs = network.predict(timit.test, args.batch_size)
+		print("phone_id_seqs")
+		print(phone_id_seqs)
 		for phone_id_seq in phone_id_seqs:
 			for phone_id in phone_id_seq:
-				print("{} ".format(timit.phones(phone_id)), file=test_file)
+				print("{} ".format(timit.phones[phone_id]), file=test_file)
 		print("", file=test_file)
