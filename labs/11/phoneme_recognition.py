@@ -4,13 +4,14 @@ import tensorflow as tf
 
 import timit_mfcc26_dataset
 
+
 class Network:
 	def __init__(self, threads, seed=42):
 		# Create an empty graph and a session
 		graph = tf.Graph()
 		graph.seed = seed
-		self.session = tf.Session(graph = graph, config=tf.ConfigProto(inter_op_parallelism_threads=threads,
-		                                                               intra_op_parallelism_threads=threads))
+		self.session = tf.Session(graph=graph, config=tf.ConfigProto(inter_op_parallelism_threads=threads,
+		                                                             intra_op_parallelism_threads=threads))
 
 	def construct(self, args, num_phones, mfcc_dim):
 		with self.session.graph.as_default():
@@ -46,33 +47,38 @@ class Network:
 				rnn_cell(args.rnn_cell_dim), rnn_cell(args.rnn_cell_dim),
 				inputs, sequence_length=self.mfcc_lens, dtype=tf.float32)
 			hidden_layer = tf.concat([hidden_layer_fwd, hidden_layer_bwd], axis=2)
-			output_layer = tf.layers.dense(hidden_layer, num_phones)
+			output_layer = tf.layers.dense(hidden_layer, num_phones + 1)
+			logits = tf.transpose(output_layer, (1, 0, 2))  # to allow for `time_major == True`
 
 			# Done: Utilize CTC loss (tf.nn.ctc_loss).
 			# Done: - `losses`: vector of losses, with an element for each example in the batch
 			losses = tf.nn.ctc_loss(
 				labels=self.sparse_phones,
-				inputs=output_layer,
-				sequence_length=self.phone_lens
+				inputs=logits,
+				sequence_length=self.mfcc_lens
 			)
 
 			# Done: Perform decoding by a CTC decoder (either greedily using tf.nn.ctc_greedy_decoder, or with beam search
 			#  employing tf.nn.ctc_beam_search_decoder).
-			decoded, _ = tf.nn.ctc_beam_search_decoder(
-				inputs=output_layer,
-				sequence_length=self.phone_lens,
+			# TODO try instead
+			# self.predictions, _ = tf.nn.ctc_beam_search_decoder(
+			self.predictions, _ = tf.nn.ctc_greedy_decoder(
+				inputs=logits,
+				sequence_length=self.mfcc_lens
 			)
+
 			# Done: Evaluate results using normalized edit distance (tf.edit_distance).
 			# Done:: - `edit_distances`: vector of edit distances, with an element for each batch example
 			edit_distances = tf.edit_distance(
-				hypothesis=decoded[0],
-				truth=tf.cast(self.sparse_phones, tf.int64),
+				hypothesis=tf.cast(self.predictions[0], tf.int32),
+				truth=self.sparse_phones,
 				normalize=True
 			)
 
 			# Training
 			global_step = tf.train.create_global_step()
-			self.training = tf.train.AdamOptimizer().minimize(tf.reduce_mean(losses), global_step=global_step, name="training")
+			self.training = tf.train.AdamOptimizer().minimize(tf.reduce_mean(losses), global_step=global_step,
+			                                                  name="training")
 
 			# Summaries
 			self.current_edit_distance, self.update_edit_distance = tf.metrics.mean(edit_distances)
@@ -99,7 +105,7 @@ class Network:
 			mfcc_lens, mfccs, phone_lens, phones = train.next_batch(batch_size)
 			self.session.run(self.reset_metrics)
 			self.session.run([self.training, self.summaries["train"]],
-			                 {self.mfcc_lens: mfcc_lens, self.mfccs: mfccs,
+			                 {self.mfcc_lens : mfcc_lens, self.mfccs: mfccs,
 			                  self.phone_lens: phone_lens, self.phones: phones})
 
 	def evaluate(self, dataset_name, dataset, batch_size):
@@ -107,13 +113,20 @@ class Network:
 		while not dataset.epoch_finished():
 			mfcc_lens, mfccs, phone_lens, phones = dataset.next_batch(batch_size)
 			self.session.run([self.update_edit_distance, self.update_loss],
-			                 {self.mfcc_lens: mfcc_lens, self.mfccs: mfccs,
+			                 {self.mfcc_lens : mfcc_lens, self.mfccs: mfccs,
 			                  self.phone_lens: phone_lens, self.phones: phones})
 		return self.session.run([self.current_edit_distance, self.summaries[dataset_name]])[0]
 
 	def predict(self, dataset, batch_size):
-		# TODO: Predict phoneme sequences for the given dataset.
-		pass
+		# Done: Predict phoneme sequences for the given dataset.
+		phone_id_seqs = []
+		while not dataset.epoch_finished():
+			mfcc_lens, mfccs, phone_lens, phones = dataset.next_batch(batch_size)
+			predictions = self.session.run([self.predictions],
+			                               {self.mfcc_lens : mfcc_lens, self.mfccs: mfccs,
+			                                self.phone_lens: phone_lens, self.phones: phones})
+			phone_id_seqs.append(predictions)
+		return phone_id_seqs
 
 
 if __name__ == "__main__":
@@ -140,7 +153,7 @@ if __name__ == "__main__":
 		datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S"),
 		",".join(("{}={}".format(re.sub("(.)[^_]*_?", r"\1", key), value) for key, value in sorted(vars(args).items())))
 	)
-	if not os.path.exists("logs"): os.mkdir("logs") # TF 1.6 will do this by itself
+	if not os.path.exists("logs"): os.mkdir("logs")  # TF 1.6 will do this by itself
 
 	# Load the data
 	timit = timit_mfcc26_dataset.TIMIT("timit-mfcc26.pickle")
@@ -162,4 +175,8 @@ if __name__ == "__main__":
 		# and save them to `test_file`. Save the phonemes for each utterance on a single line,
 		# separating them by a single space. The phonemes should be printed as strings (use
 		# timit.phones to convert phoneme IDs to strings).
-		pass
+		phone_id_seqs = network.predict(timit.test, args.batch_size)
+		for phone_id_seq in phone_id_seqs:
+			for phone_id in phone_id_seq:
+				print("{} ".format(timit.phones(phone_id)), file=test_file)
+		print("", file=test_file)
