@@ -122,7 +122,7 @@ class Network:
 		phone_id_seqs = []
 		while not dataset.epoch_finished():
 			mfcc_lens, mfccs, phone_lens, phones = dataset.next_batch(batch_size)
-			predictions = self.session.run([self.predictions],
+			predictions = self.session.run([self.predictions[0]],
 			                               {self.mfcc_lens : mfcc_lens, self.mfccs: mfccs,
 			                                self.phone_lens: phone_lens, self.phones: phones})
 			phone_id_seqs.append(predictions)
@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
 	# Parse arguments
 	parser = argparse.ArgumentParser()
-	parser.add_argument("--batch_size", default=10, type=int, help="Batch size.")
+	parser.add_argument("--batch_size", default=100, type=int, help="Batch size.")
 	parser.add_argument("--epochs", default=1, type=int, help="Number of epochs.")
 	parser.add_argument("--rnn_cell", default="GRU", type=str, help="RNN cell type.")
 	parser.add_argument("--rnn_cell_dim", default=5, type=int, help="RNN cell dimension.")
