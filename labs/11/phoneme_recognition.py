@@ -122,9 +122,11 @@ class Network:
 		phone_id_seqs = []
 		while not dataset.epoch_finished():
 			mfcc_lens, mfccs, phone_lens, phones = dataset.next_batch(batch_size)
-			predictions = self.session.run([self.predictions[0]],
-			                               {self.mfcc_lens : mfcc_lens, self.mfccs: mfccs,
-			                                self.phone_lens: phone_lens, self.phones: phones})
+			predictions = self.session.run(
+				[tf.sparse_tensor_to_dense(self.predictions[0])],
+				{self.mfcc_lens : mfcc_lens, self.mfccs: mfccs,
+				 self.phone_lens: phone_lens, self.phones: phones}
+			)
 			phone_id_seqs.append(predictions)
 		return phone_id_seqs
 
