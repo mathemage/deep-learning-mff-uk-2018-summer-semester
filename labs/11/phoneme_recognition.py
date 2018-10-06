@@ -192,9 +192,6 @@ if __name__ == "__main__":
 		for phone_id_seq in phone_id_seqs:
 			for phone_id in phone_id_seq:
 				print("{} ".format(timit.phones[phone_id]), file=test_file, end='')
+				print("{} ".format(phone_id), end='')
 			print("", file=test_file)
-
-	for phone_id_seq in phone_id_seqs:
-		for phone_id in phone_id_seq:
-			print("{} ".format(timit.phones[phone_id]), end='')
-		print()
+			print("\n_______________________________")
