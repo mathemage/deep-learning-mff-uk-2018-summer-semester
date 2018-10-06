@@ -121,15 +121,18 @@ class Network:
 		# Done: Predict phoneme sequences for the given dataset.
 		phone_id_seqs = []
 		while not dataset.epoch_finished():
+			batch_size = 1    # TODO hack
 			mfcc_lens, mfccs, phone_lens, phones = dataset.next_batch(batch_size)
-			phone_id_seqs.append(
-				self.session.run(
-					[tf.sparse_tensor_to_dense(self.predictions[0])],
-					{self.mfcc_lens : mfcc_lens, self.mfccs: mfccs,
-					 self.phone_lens: phone_lens, self.phones: phones}
-				)
+			results, predictions = self.session.run(
+				[tf.sparse_tensor_to_dense(self.predictions[0]), self.predictions],
+				{self.mfcc_lens : mfcc_lens, self.mfccs: mfccs,
+				 self.phone_lens: phone_lens, self.phones: phones}
 			)
-		return np.concatenate(phone_id_seqs)
+			phone_id_seqs.append(results)
+			print("predictions:")
+			print(predictions)
+			print("#################################")
+		return phone_id_seqs
 
 
 if __name__ == "__main__":
@@ -143,7 +146,7 @@ if __name__ == "__main__":
 
 	# Parse arguments
 	parser = argparse.ArgumentParser()
-	parser.add_argument("--batch_size", default=100, type=int, help="Batch size.")
+	parser.add_argument("--batch_size", default=1500, type=int, help="Batch size.")
 	parser.add_argument("--epochs", default=1, type=int, help="Number of epochs.")
 	parser.add_argument("--rnn_cell", default="GRU", type=str, help="RNN cell type.")
 	parser.add_argument("--rnn_cell_dim", default=5, type=int, help="RNN cell dimension.")
