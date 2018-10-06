@@ -131,7 +131,7 @@ class Network:
 			print("indices:\n{}".format(indices))
 			print("values:\n{}".format(values))
 
-			predictions = [[None]] * batch_size
+			predictions = [[]] * batch_size
 			for index2D, value in zip(indices, values):
 				predictions[index2D[0]].append(value)
 			print("predictions:")
