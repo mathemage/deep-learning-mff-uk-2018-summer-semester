@@ -121,16 +121,22 @@ class Network:
 		# Done: Predict phoneme sequences for the given dataset.
 		phone_id_seqs = []
 		while not dataset.epoch_finished():
-			batch_size = 1    # TODO hack
 			mfcc_lens, mfccs, phone_lens, phones = dataset.next_batch(batch_size)
-			results, predictions = self.session.run(
-				[tf.sparse_tensor_to_dense(self.predictions[0]), self.predictions],
+			indices, values = self.session.run(
+				# [tf.sparse_tensor_to_dense(self.predictions[0]), self.predictions], TODO remove
+				[self.predictions[0].indices, self.predictions[0].values],
 				{self.mfcc_lens : mfcc_lens, self.mfccs: mfccs,
 				 self.phone_lens: phone_lens, self.phones: phones}
 			)
-			phone_id_seqs.append(results)
+			print("indices:\n{}".format(indices))
+			print("values:\n{}".format(values))
+
+			predictions = [[None]] * batch_size
+			for index2D, value in zip(indices, values):
+				predictions[index2D[0]].append(value)
 			print("predictions:")
 			print(predictions)
+			phone_id_seqs.extend(predictions)
 			print("#################################")
 		return phone_id_seqs
 
