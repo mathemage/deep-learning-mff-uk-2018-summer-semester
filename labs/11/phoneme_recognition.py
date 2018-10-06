@@ -123,21 +123,20 @@ class Network:
 		while not dataset.epoch_finished():
 			mfcc_lens, mfccs, phone_lens, phones = dataset.next_batch(batch_size)
 			indices, values = self.session.run(
-				# [tf.sparse_tensor_to_dense(self.predictions[0]), self.predictions], TODO remove
 				[self.predictions[0].indices, self.predictions[0].values],
 				{self.mfcc_lens : mfcc_lens, self.mfccs: mfccs,
 				 self.phone_lens: phone_lens, self.phones: phones}
 			)
-			print("indices:\n{}".format(indices))
-			print("values:\n{}".format(values))
+			# print("indices:\n{}".format(indices))
+			# print("values:\n{}".format(values))
 
 			predictions = [[]] * batch_size
 			for index2D, value in zip(indices, values):
 				predictions[index2D[0]].append(value)
-			print("predictions:")
-			print(predictions)
+			# print("predictions:")
+			# print(predictions)
+			# print("#################################")
 			phone_id_seqs.extend(predictions)
-			print("#################################")
 		return phone_id_seqs
 
 
@@ -188,8 +187,8 @@ if __name__ == "__main__":
 		# separating them by a single space. The phonemes should be printed as strings (use
 		# timit.phones to convert phoneme IDs to strings).
 		phone_id_seqs = network.predict(timit.test, args.batch_size)
-		print("phone_id_seqs")
-		print(phone_id_seqs)
+		# print("phone_id_seqs")
+		# print(phone_id_seqs)
 		for phone_id_seq in phone_id_seqs:
 			for phone_id in phone_id_seq:
 				print("{} ".format(timit.phones[phone_id]), file=test_file, end='')
