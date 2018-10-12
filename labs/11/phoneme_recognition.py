@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
 	# Parse arguments
 	parser = argparse.ArgumentParser()
-	parser.add_argument("--batch_size", default=100, type=int, help="Batch size.")
+	parser.add_argument("--batch_size", default=32, type=int, help="Batch size.")
 	parser.add_argument("--epochs", default=10, type=int, help="Number of epochs.")
 	parser.add_argument("--rnn_cell", default="GRU", type=str, help="RNN cell type.")
 	parser.add_argument("--rnn_cell_dim", default=128, type=int, help="RNN cell dimension.")
