@@ -128,7 +128,7 @@ class Network:
 				 self.phone_lens: phone_lens, self.phones: phones}
 			)
 
-			predictions = [[]] * batch_size
+			predictions = [[] for _ in range(batch_size)]
 			for index2D, value in zip(indices, values):
 				predictions[index2D[0]].append(value)
 			phone_id_seqs.extend(predictions)
